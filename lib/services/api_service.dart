@@ -60,9 +60,10 @@ class ApiService {
   }
 
   // Generic GET request
-  Future<Map<String, dynamic>> get(String endpoint) async {
+  Future<dynamic> get(String endpoint) async {
     return await _makeRequest(() async {
       final url = Uri.parse('$_apiUrl$endpoint');
+      debugPrint('🌐 GET Request: $url');
       return await http.get(url, headers: _headers);
     });
   }
@@ -102,11 +103,11 @@ class ApiService {
   }
 
   // Make request with fallback logic
-  Future<Map<String, dynamic>> _makeRequest(Future<http.Response> Function() requestFunction) async {
-    debugPrint('Making request to: $_apiUrl');
+  Future<dynamic> _makeRequest(Future<http.Response> Function() requestFunction) async {
     try {
       final response = await requestFunction();
-      debugPrint('Request successful: ${response.statusCode}');
+      debugPrint('✅ Request successful: ${response.statusCode}');
+      debugPrint('📦 Response body length: ${response.body.length}');
       return _handleResponse(response);
     } catch (e) {
       debugPrint('Request failed: $e');
@@ -134,18 +135,29 @@ class ApiService {
   }
 
   // Handle HTTP response
-  Map<String, dynamic> _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response) {
     final statusCode = response.statusCode;
-    
+    debugPrint('📊 Response status: $statusCode');
+    debugPrint('📄 Response body preview: ${response.body.length > 200 ? response.body.substring(0, 200) + "..." : response.body}');
+
     if (statusCode >= 200 && statusCode < 300) {
       // Success
       if (response.body.isEmpty) {
+        debugPrint('⚠️ Empty response body');
         return {'success': true};
       }
-      
+
       try {
-        return json.decode(response.body);
+        final decoded = json.decode(response.body);
+        debugPrint('✅ JSON decoded successfully');
+        if (decoded is List) {
+          debugPrint('📋 Response is array with ${decoded.length} items');
+        } else if (decoded is Map) {
+          debugPrint('📋 Response is object with keys: ${decoded.keys.toList()}');
+        }
+        return decoded;
       } catch (e) {
+        debugPrint('❌ JSON decode error: $e');
         return {'success': true, 'data': response.body};
       }
     } else if (statusCode == 401) {

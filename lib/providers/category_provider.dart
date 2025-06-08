@@ -28,8 +28,8 @@ class CategoryProvider with ChangeNotifier {
       List<dynamic> categoryData = [];
 
       if (response is List) {
-        categoryData = response as List<dynamic>;
-      } else if (response.containsKey('data') && response['data'] is List) {
+        categoryData = response;
+      } else if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is List) {
         categoryData = response['data'] as List<dynamic>;
       } else {
         // If API fails, use fallback categories

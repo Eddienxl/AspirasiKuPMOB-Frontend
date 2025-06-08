@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'providers/auth_provider.dart';
 import 'providers/post_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/comment_provider.dart';
 import 'providers/app_notification_provider.dart';
 import 'screens/splash_screen.dart';
 import 'utils/app_colors.dart';
 
 void main() {
+  // Set Indonesian locale for timeago
+  timeago.setLocaleMessages('id', timeago.IdMessages());
   runApp(const MyApp());
 }
 
@@ -21,11 +26,22 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => CommentProvider()),
         ChangeNotifierProvider(create: (_) => AppNotificationProvider()),
       ],
       child: MaterialApp(
         title: 'AspirasiKu',
         debugShowCheckedModeBanner: false,
+        locale: const Locale('id', 'ID'),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('id', 'ID'),
+          Locale('en', 'US'),
+        ],
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(

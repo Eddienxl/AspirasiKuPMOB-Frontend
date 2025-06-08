@@ -42,6 +42,113 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
     }
   }
 
+  // Handle upvote with authentication check
+  Future<void> _handleUpvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleUpvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan upvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle downvote with authentication check
+  Future<void> _handleDownvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleDownvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan downvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle report with authentication check
+  Future<void> _handleReport(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    // Navigate to post detail for reporting
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailScreen(postId: postId),
+      ),
+    );
+  }
+
+  // Show login required dialog
+  void _showLoginRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Login Diperlukan'),
+        content: const Text(
+          'Anda perlu login terlebih dahulu untuk berinteraksi dengan postingan.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+            ),
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Handle read post with authentication check
+  void _handleReadPost(int postId) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailScreen(postId: postId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CampusBackgroundScaffold(
@@ -379,14 +486,10 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
                       final post = featuredPosts[index];
                       return PostCard(
                         post: post,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PostDetailScreen(postId: post.id),
-                            ),
-                          );
-                        },
+                        onTap: () => _handleReadPost(post.id),
+                        onUpvote: () => _handleUpvote(post.id),
+                        onDownvote: () => _handleDownvote(post.id),
+                        onReport: () => _handleReport(post.id),
                       );
                     },
                   );

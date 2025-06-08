@@ -22,7 +22,9 @@ class AppNotificationProvider with ChangeNotifier {
   // Private methods
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _setError(String? error) {

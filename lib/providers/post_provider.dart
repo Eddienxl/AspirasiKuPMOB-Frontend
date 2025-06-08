@@ -48,18 +48,31 @@ class PostProvider with ChangeNotifier {
 
       print('🔄 Loading posts from: $endpoint');
       final response = await _apiService.get(endpoint);
+      print('📦 Raw response type: ${response.runtimeType}');
 
       // Handle different response formats
       List<dynamic> postsData = [];
 
       if (response is List) {
-        postsData = response as List<dynamic>;
-      } else if (response.containsKey('data') && response['data'] is List) {
-        postsData = response['data'] as List<dynamic>;
-      } else if (response.containsKey('postingan') && response['postingan'] is List) {
-        postsData = response['postingan'] as List<dynamic>;
-      } else if (response.containsKey('posts') && response['posts'] is List) {
-        postsData = response['posts'] as List<dynamic>;
+        print('✅ Response is direct array');
+        postsData = response;
+      } else if (response is Map<String, dynamic>) {
+        print('✅ Response is object, checking for data fields...');
+        if (response.containsKey('data') && response['data'] is List) {
+          print('✅ Found data field with array');
+          postsData = response['data'] as List<dynamic>;
+        } else if (response.containsKey('postingan') && response['postingan'] is List) {
+          print('✅ Found postingan field with array');
+          postsData = response['postingan'] as List<dynamic>;
+        } else if (response.containsKey('posts') && response['posts'] is List) {
+          print('✅ Found posts field with array');
+          postsData = response['posts'] as List<dynamic>;
+        } else {
+          print('❌ No recognized array field found in response');
+          print('📋 Available keys: ${response.keys.toList()}');
+        }
+      } else {
+        print('❌ Unexpected response format: ${response.runtimeType}');
       }
 
       print('📊 Loaded ${postsData.length} posts from API');
@@ -196,60 +209,90 @@ class PostProvider with ChangeNotifier {
 
   // Toggle upvote
   Future<bool> toggleUpvote(int postId) async {
+    // Optimistically update UI first for better UX
+    final index = _posts.indexWhere((post) => post.id == postId);
+    Post? originalPost;
+
+    if (index != -1) {
+      originalPost = _posts[index];
+      final wasUpvoted = originalPost.hasUserUpvoted;
+      final wasDownvoted = originalPost.hasUserDownvoted;
+
+      _posts[index] = originalPost.copyWith(
+        upvoteCount: wasUpvoted ? originalPost.upvoteCount - 1 : originalPost.upvoteCount + 1,
+        downvoteCount: wasDownvoted ? originalPost.downvoteCount - 1 : originalPost.downvoteCount,
+        userInteraction: wasUpvoted ? null : AppConstants.upvote,
+      );
+      notifyListeners();
+    }
+
     try {
       await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
         'id_postingan': postId,
         'tipe': AppConstants.upvote,
       });
 
-      // Update post in the list
-      final index = _posts.indexWhere((post) => post.id == postId);
-      if (index != -1) {
-        final post = _posts[index];
-        final wasUpvoted = post.hasUserUpvoted;
-        final wasDownvoted = post.hasUserDownvoted;
-
-        _posts[index] = post.copyWith(
-          upvoteCount: wasUpvoted ? post.upvoteCount - 1 : post.upvoteCount + 1,
-          downvoteCount: wasDownvoted ? post.downvoteCount - 1 : post.downvoteCount,
-          userInteraction: wasUpvoted ? null : AppConstants.upvote,
-        );
+      return true;
+    } catch (e) {
+      // Revert optimistic update on error
+      if (originalPost != null && index != -1) {
+        _posts[index] = originalPost;
         notifyListeners();
       }
 
-      return true;
-    } catch (e) {
-      _setError(e.toString());
+      // Provide user-friendly error messages
+      if (e.toString().contains('column') && e.toString().contains('does not exist')) {
+        _setError('Fitur upvote sedang dalam perbaikan. Silakan coba lagi nanti.');
+      } else if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        _setError('Sesi Anda telah berakhir, silakan login kembali');
+      } else {
+        _setError('Gagal memberikan upvote. Silakan coba lagi.');
+      }
       return false;
     }
   }
 
   // Toggle downvote
   Future<bool> toggleDownvote(int postId) async {
+    // Optimistically update UI first for better UX
+    final index = _posts.indexWhere((post) => post.id == postId);
+    Post? originalPost;
+
+    if (index != -1) {
+      originalPost = _posts[index];
+      final wasUpvoted = originalPost.hasUserUpvoted;
+      final wasDownvoted = originalPost.hasUserDownvoted;
+
+      _posts[index] = originalPost.copyWith(
+        upvoteCount: wasUpvoted ? originalPost.upvoteCount - 1 : originalPost.upvoteCount,
+        downvoteCount: wasDownvoted ? originalPost.downvoteCount - 1 : originalPost.downvoteCount + 1,
+        userInteraction: wasDownvoted ? null : AppConstants.downvote,
+      );
+      notifyListeners();
+    }
+
     try {
       await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
         'id_postingan': postId,
         'tipe': AppConstants.downvote,
       });
 
-      // Update post in the list
-      final index = _posts.indexWhere((post) => post.id == postId);
-      if (index != -1) {
-        final post = _posts[index];
-        final wasUpvoted = post.hasUserUpvoted;
-        final wasDownvoted = post.hasUserDownvoted;
-
-        _posts[index] = post.copyWith(
-          upvoteCount: wasUpvoted ? post.upvoteCount - 1 : post.upvoteCount,
-          downvoteCount: wasDownvoted ? post.downvoteCount - 1 : post.downvoteCount + 1,
-          userInteraction: wasDownvoted ? null : AppConstants.downvote,
-        );
+      return true;
+    } catch (e) {
+      // Revert optimistic update on error
+      if (originalPost != null && index != -1) {
+        _posts[index] = originalPost;
         notifyListeners();
       }
 
-      return true;
-    } catch (e) {
-      _setError(e.toString());
+      // Provide user-friendly error messages
+      if (e.toString().contains('column') && e.toString().contains('does not exist')) {
+        _setError('Fitur downvote sedang dalam perbaikan. Silakan coba lagi nanti.');
+      } else if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        _setError('Sesi Anda telah berakhir, silakan login kembali');
+      } else {
+        _setError('Gagal memberikan downvote. Silakan coba lagi.');
+      }
       return false;
     }
   }
@@ -265,7 +308,14 @@ class PostProvider with ChangeNotifier {
 
       return true;
     } catch (e) {
-      _setError(e.toString());
+      // Provide user-friendly error messages
+      if (e.toString().contains('column') && e.toString().contains('does not exist')) {
+        _setError('Terjadi masalah dengan server. Tim teknis sedang memperbaiki.');
+      } else if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        _setError('Sesi Anda telah berakhir, silakan login kembali');
+      } else {
+        _setError('Gagal mengirim laporan. Silakan coba lagi.');
+      }
       return false;
     }
   }

@@ -91,9 +91,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
       });
 
       // Navigate back to dashboard after successful submission
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         }
       });
     } else if (mounted) {

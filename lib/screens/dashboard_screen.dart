@@ -105,6 +105,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Handle upvote with authentication check
+  Future<void> _handleUpvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleUpvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan upvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle downvote with authentication check
+  Future<void> _handleDownvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleDownvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan downvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle read post with authentication check
+  void _handleReadPost(int postId) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(postId: postId),
+      ),
+    );
+  }
+
   void _handleNavigation(int index) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -603,16 +661,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               final post = postProvider.posts[index];
               return PostCard(
                 post: post,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
-                    ),
-                  );
-                },
-                onUpvote: () => postProvider.toggleUpvote(post.id),
-                onDownvote: () => postProvider.toggleDownvote(post.id),
+                onTap: () => _handleReadPost(post.id),
+                onUpvote: () => _handleUpvote(post.id),
+                onDownvote: () => _handleDownvote(post.id),
                 onComment: () {
                   Navigator.push(
                     context,
@@ -621,7 +672,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                onReport: () => _showReportDialog(post.id),
+                onReport: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PostDetailScreen(postId: post.id),
+                    ),
+                  );
+                },
               );
             },
             childCount: postProvider.posts.length + 1, // +1 for footer
@@ -671,65 +729,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _showReportDialog(int postId) {
-    final reasonController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Laporkan Postingan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Mengapa Anda melaporkan postingan ini?',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: const InputDecoration(
-                hintText: 'Masukkan alasan laporan...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (reasonController.text.trim().isNotEmpty) {
-                final postProvider = Provider.of<PostProvider>(context, listen: false);
-                final success = await postProvider.reportPost(
-                  postId,
-                  reasonController.text.trim(),
-                );
-
-                if (mounted) {
-                  final navigator = Navigator.of(context);
-                  final messenger = ScaffoldMessenger.of(context);
-
-                  navigator.pop();
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success ? 'Laporan berhasil dikirim' : 'Gagal mengirim laporan',
-                      ),
-                      backgroundColor: success ? AppColors.success : AppColors.error,
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Kirim Laporan'),
-          ),
-        ],
-      ),
-    );
-  }
 }
