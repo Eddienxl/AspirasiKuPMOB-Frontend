@@ -47,18 +47,37 @@ class PostProvider with ChangeNotifier {
           : AppConstants.postEndpoint;
 
       final response = await _apiService.get(endpoint);
-      
+
+      // Handle different response formats
+      List<dynamic> postsData = [];
+
       if (response is List) {
-        _posts = (response as List).map((json) => Post.fromJson(json as Map<String, dynamic>)).toList();
-      } else if (response is Map<String, dynamic> && response.containsKey('data') && response['data'] is List) {
-        _posts = (response['data'] as List).map((json) => Post.fromJson(json as Map<String, dynamic>)).toList();
-      } else {
-        _posts = [];
+        postsData = response as List<dynamic>;
+      } else      if (response.containsKey('data') && response['data'] is List) {
+        postsData = response['data'] as List<dynamic>;
+      } else if (response.containsKey('postingan') && response['postingan'] is List) {
+        postsData = response['postingan'] as List<dynamic>;
+      } else if (response.containsKey('posts') && response['posts'] is List) {
+        postsData = response['posts'] as List<dynamic>;
       }
-      
+    
+
+      _posts = postsData.map((json) => Post.fromJson(json as Map<String, dynamic>)).toList();
+      _clearError();
       notifyListeners();
     } catch (e) {
-      _setError(e.toString());
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      // Provide more user-friendly error messages
+      if (errorMessage.contains('500')) {
+        errorMessage = 'Server sedang mengalami masalah. Silakan coba lagi nanti.';
+      } else if (errorMessage.contains('Connection refused') || errorMessage.contains('Network')) {
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (errorMessage.contains('Timeout')) {
+        errorMessage = 'Koneksi timeout. Silakan coba lagi.';
+      }
+
+      _setError(errorMessage);
     } finally {
       _setLoading(false);
     }
@@ -94,15 +113,17 @@ class PostProvider with ChangeNotifier {
       };
 
       final response = await _apiService.post(AppConstants.postEndpoint, data);
-      
+
       if (response['id'] != null) {
-        // Add new post to the beginning of the list
-        final newPost = Post.fromJson(response);
-        _posts.insert(0, newPost);
-        notifyListeners();
+        // Refresh all posts to get the latest data with proper relationships
+        await loadPosts(
+          filter: _currentFilter,
+          sort: _currentSort,
+          refresh: true,
+        );
         return true;
       }
-      
+
       return false;
     } catch (e) {
       _setError(e.toString());
@@ -267,6 +288,8 @@ class PostProvider with ChangeNotifier {
 
   void _clearError() {
     _error = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 }

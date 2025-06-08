@@ -9,15 +9,28 @@ class AppNotificationService {
   Future<List<AppNotification>> getAllNotifications() async {
     try {
       final response = await _apiService.get(AppConstants.notificationEndpoint);
-      
-      if (response['data'] != null) {
-        final List<dynamic> notificationsJson = response['data'];
-        return notificationsJson
-            .map((json) => AppNotification.fromJson(json))
-            .toList();
+
+      // Handle different response formats
+      List<dynamic> notificationsJson = [];
+
+      if (response is List) {
+        // Direct array response
+        notificationsJson = response as List<dynamic>;
+      } else      if (response['data'] != null) {
+        if (response['data'] is List) {
+          notificationsJson = response['data'] as List<dynamic>;
+        } else if (response['data'] is String && response['data'] == '[]') {
+          // Handle empty string array
+          notificationsJson = [];
+        }
+      } else if (response['notifikasi'] != null && response['notifikasi'] is List) {
+        notificationsJson = response['notifikasi'] as List<dynamic>;
       }
-      
-      return [];
+    
+
+      return notificationsJson
+          .map((json) => AppNotification.fromJson(json))
+          .toList();
     } catch (e) {
       throw Exception('Failed to load notifications: $e');
     }

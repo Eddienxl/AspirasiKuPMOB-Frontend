@@ -10,11 +10,13 @@ class ApiService {
   ApiService._internal();
 
   String? _token;
-  bool _useLocalhost = false; // Use Railway production server (updated from GitHub push)
+  bool _useFallback = false; // Start with primary URL (localhost)
 
   // Get the appropriate API URL
   String get _apiUrl {
-    return _useLocalhost ? AppConstants.fallbackApiUrl : AppConstants.apiUrl;
+    final url = _useFallback ? AppConstants.fallbackApiUrl : AppConstants.apiUrl;
+    debugPrint('🌐 Using API URL: $url (fallback: $_useFallback)');
+    return url;
   }
 
   // Initialize token from storage
@@ -36,7 +38,7 @@ class ApiService {
   // Test connection to server
   Future<bool> testConnection() async {
     try {
-      final url = Uri.parse(_useLocalhost ? AppConstants.baseUrl : AppConstants.fallbackUrl);
+      final url = Uri.parse(_useFallback ? AppConstants.fallbackUrl : AppConstants.baseUrl);
       final response = await http.get(url).timeout(const Duration(seconds: 5));
       return response.statusCode == 200;
     } catch (e) {
@@ -69,6 +71,8 @@ class ApiService {
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
     return await _makeRequest(() async {
       final url = Uri.parse('$_apiUrl$endpoint');
+      debugPrint('🚀 POST Request: $url');
+      debugPrint('📦 POST Data: $data');
       return await http.post(
         url,
         headers: _headers,
@@ -106,20 +110,22 @@ class ApiService {
       return _handleResponse(response);
     } catch (e) {
       debugPrint('Request failed: $e');
-      // If production fails and we're using production, try localhost fallback
-      if (!_useLocalhost && (e.toString().contains('Connection refused') ||
+      // If primary server fails, try fallback
+      if (!_useFallback && (e.toString().contains('Connection refused') ||
           e.toString().contains('Network is unreachable') ||
           e.toString().contains('Failed host lookup') ||
-          e.toString().contains('XMLHttpRequest error'))) {
+          e.toString().contains('XMLHttpRequest error') ||
+          e.toString().contains('502') ||
+          e.toString().contains('Application failed to respond'))) {
 
-        debugPrint('Railway server failed, trying localhost fallback...');
-        _useLocalhost = true;
+        debugPrint('Primary server failed, trying fallback server...');
+        _useFallback = true;
 
         try {
           final response = await requestFunction();
           return _handleResponse(response);
         } catch (fallbackError) {
-          throw Exception('Network error: Both Railway and localhost server failed. $fallbackError');
+          throw Exception('Network error: Both primary and fallback server failed. $fallbackError');
         }
       }
 

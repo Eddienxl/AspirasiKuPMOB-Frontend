@@ -135,6 +135,12 @@ class AuthProvider with ChangeNotifier {
       );
 
       if (result['success'] == true) {
+        // If registration includes auto-login (token and user), set logged in state
+        if (result['token'] != null && result['user'] != null) {
+          _user = result['user'];
+          _isLoggedIn = true;
+          notifyListeners();
+        }
         return true;
       } else {
         String errorMessage = result['message'] ?? 'Registration failed';
@@ -144,6 +150,8 @@ class AuthProvider with ChangeNotifier {
           errorMessage = 'Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil.';
         } else if (errorMessage.contains('Email sudah digunakan')) {
           errorMessage = 'Email sudah terdaftar. Silakan gunakan email lain atau login.';
+        } else if (errorMessage.contains('NIM sudah digunakan')) {
+          errorMessage = 'NIM sudah terdaftar. Silakan gunakan NIM lain atau login.';
         } else if (errorMessage.contains('Kode rahasia tidak valid')) {
           errorMessage = 'Kode rahasia peninjau tidak valid.';
         }

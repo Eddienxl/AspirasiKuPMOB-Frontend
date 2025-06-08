@@ -10,7 +10,6 @@ import '../widgets/category_filter.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/campus_background.dart';
 import '../widgets/app_sidebar.dart';
-import '../widgets/app_footer.dart';
 
 import 'login_screen.dart';
 
@@ -121,26 +120,28 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
         if (showSidebar) {
           // Desktop/Tablet layout with sidebar
-          return CampusBackgroundScaffold(
-            showOverlay: true,
-            overlayOpacity: 0.1,
-            body: Row(
-              children: [
-                // Sidebar
-                AppSidebar(
-                  currentIndex: 2, // Add Post index
-                  onItemTapped: (index) {
-                    _handleSidebarNavigation(index);
-                  },
-                ),
-
-                // Main content
-                Expanded(
-                  child: SafeArea(
-                    child: _buildAddPostContent(),
+          return Scaffold(
+            body: CampusBackground(
+              showOverlay: true,
+              overlayOpacity: 0.1,
+              child: Row(
+                children: [
+                  // Sidebar
+                  AppSidebar(
+                    currentIndex: 2, // Add Post index
+                    onItemTapped: (index) {
+                      _handleSidebarNavigation(index);
+                    },
                   ),
-                ),
-              ],
+
+                  // Main content
+                  Expanded(
+                    child: SafeArea(
+                      child: _buildAddPostContent(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         } else {
@@ -298,8 +299,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
             const SizedBox(height: 32),
 
-            // Footer
-            const CompactFooter(),
+            // Add some bottom padding instead of footer to prevent overflow
+            const SizedBox(height: 16),
           ],
         ),
       ),

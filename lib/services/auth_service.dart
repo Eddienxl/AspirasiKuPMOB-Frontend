@@ -14,6 +14,7 @@ class AuthService {
   // Login
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      print('🔐 AuthService: Attempting login for $email');
       final response = await _apiService.post(
         '${AppConstants.authEndpoint}/login',
         {
@@ -21,6 +22,7 @@ class AuthService {
           'kata_sandi': password,
         },
       );
+      print('🔐 AuthService: Login response received: ${response.keys}');
 
       if (response['token'] != null && response['user'] != null) {
         // Save token and user data
@@ -50,6 +52,7 @@ class AuthService {
     String? kodeRahasia,
   }) async {
     try {
+      print('📝 AuthService: Attempting register for $email');
       final data = {
         'nim': nim,
         'nama': nama,
@@ -62,17 +65,34 @@ class AuthService {
         data['kodeRahasia'] = kodeRahasia;
       }
 
+      print('📝 AuthService: Register data: $data');
       final response = await _apiService.post(
         '${AppConstants.authEndpoint}/register',
         data,
       );
+      print('📝 AuthService: Register response received: ${response.keys}');
 
-      return {
-        'success': true,
-        'message': response['message'] ?? 'Registration successful',
-        'data': response,
-      };
+      // Check if registration was successful
+      if (response['token'] != null && response['user'] != null) {
+        // Save token and user data for auto-login
+        await _saveAuthData(response['token'], response['user']);
+        _apiService.setToken(response['token']);
+
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Registration successful',
+          'user': User.fromJson(response['user']),
+          'token': response['token'],
+        };
+      } else {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Registration successful',
+          'data': response,
+        };
+      }
     } catch (e) {
+      print('📝 AuthService: Register error: $e');
       return {
         'success': false,
         'message': e.toString().replaceAll('Exception: ', ''),

@@ -48,10 +48,8 @@ class CustomTextField extends StatelessWidget {
 
         if (label.isNotEmpty) const SizedBox(height: 8),
 
-        // Text field with mouse region fix
-        MouseRegion(
-          cursor: enabled ? SystemMouseCursors.text : SystemMouseCursors.forbidden,
-          child: TextFormField(
+        // Text field
+        TextFormField(
             controller: controller,
             obscureText: obscureText,
             keyboardType: keyboardType,
@@ -129,7 +127,6 @@ class CustomTextField extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ],
     );
   }

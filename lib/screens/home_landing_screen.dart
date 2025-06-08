@@ -19,17 +19,27 @@ class HomeLandingScreen extends StatefulWidget {
 }
 
 class _HomeLandingScreenState extends State<HomeLandingScreen> {
-  late Future<void> _loadPostsFuture;
+  bool _hasLoadedPosts = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPostsFuture = _loadFeaturedPosts();
+    // Use addPostFrameCallback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFeaturedPosts();
+    });
   }
 
   Future<void> _loadFeaturedPosts() async {
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    await postProvider.loadPosts(refresh: true);
+    if (!_hasLoadedPosts) {
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+      await postProvider.loadPosts(refresh: true);
+      if (mounted) {
+        setState(() {
+          _hasLoadedPosts = true;
+        });
+      }
+    }
   }
 
   @override
@@ -318,18 +328,15 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
 
           const SizedBox(height: 16),
 
-          FutureBuilder<void>(
-            future: _loadPostsFuture,
-            builder: (context, snapshot) {
-              return Consumer<PostProvider>(
-                builder: (context, postProvider, child) {
-                  if (postProvider.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    );
-                  }
+          Consumer<PostProvider>(
+            builder: (context, postProvider, child) {
+              if (!_hasLoadedPosts || postProvider.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                  ),
+                );
+              }
 
                   final featuredPosts = postProvider.posts.take(6).toList();
 
@@ -383,9 +390,7 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
                       );
                     },
                   );
-                },
-              );
-            },
+            }
           ),
         ],
       ),

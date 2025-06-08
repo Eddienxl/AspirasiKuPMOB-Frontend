@@ -150,34 +150,33 @@ class CategoryDropdown extends StatelessWidget {
 
         final categories = categoryProvider.categories;
         
-        return MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: DropdownButtonFormField<String>(
-            value: selectedCategory,
-            onChanged: onCategoryChanged,
-            decoration: InputDecoration(
-              hintText: hint,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2),
-              ),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        return DropdownButtonFormField<String>(
+          value: selectedCategory,
+          onChanged: onCategoryChanged,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
             ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
           items: [
             if (showAllOption)
               const DropdownMenuItem<String>(
                 value: 'semua',
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('📋', style: TextStyle(fontSize: 16)),
                     SizedBox(width: 8),
@@ -189,13 +188,14 @@ class CategoryDropdown extends StatelessWidget {
               return DropdownMenuItem<String>(
                 value: category.id.toString(),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       category.emoji ?? AppConstants.getCategoryEmoji(category.id),
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
+                    Flexible(
                       child: Text(
                         category.nama,
                         overflow: TextOverflow.ellipsis,
@@ -206,7 +206,6 @@ class CategoryDropdown extends StatelessWidget {
               );
             }),
           ],
-          ),
         );
       },
     );
@@ -248,41 +247,39 @@ class CategoryFilterDropdown extends StatelessWidget {
 
         final categories = ['semua', ...categoryProvider.categories.map((c) => c.id.toString())];
 
-        return MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-              value: selectedCategory,
-              onChanged: (value) {
-                if (value != null) {
-                  onCategoryChanged(value);
-                }
-              },
-              isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+        return Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-              dropdownColor: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              elevation: 8,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ],
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+            value: selectedCategory,
+            onChanged: (value) {
+              if (value != null) {
+                onCategoryChanged(value);
+              }
+            },
+            isExpanded: true,
+            icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            dropdownColor: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            elevation: 8,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
               selectedItemBuilder: (context) {
                 return categories.map((categoryId) {
                   String itemDisplayName;
@@ -386,7 +383,6 @@ class CategoryFilterDropdown extends StatelessWidget {
                   ),
                 );
               }).toList(),
-              ),
             ),
           ),
         );

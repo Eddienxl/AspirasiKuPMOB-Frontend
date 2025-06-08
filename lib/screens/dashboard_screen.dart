@@ -41,6 +41,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh posts when returning to dashboard (e.g., after creating a post)
+    if (ModalRoute.of(context)?.isCurrent == true) {
+      _refreshPostsIfNeeded();
+    }
+  }
+
+  void _refreshPostsIfNeeded() {
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    // Only refresh if we have posts and it's been more than 30 seconds since last load
+    if (postProvider.posts.isNotEmpty) {
+      _refreshPosts();
+    }
+  }
+
   Future<void> _loadInitialData() async {
     final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
     final postProvider = Provider.of<PostProvider>(context, listen: false);
@@ -229,13 +246,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildDashboardTab() {
     return Column(
       children: [
-        // Header
+        // Header - make it more compact
         _buildHeader(),
-        
-        // Filters
+
+        // Filters - make it more compact
         _buildFilters(),
-        
-        // Posts list
+
+        // Posts list - give it more space
         Expanded(
           child: _buildPostsList(),
         ),
@@ -566,42 +583,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         return RefreshIndicator(
           onRefresh: _refreshPosts,
-          child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 16),
-            itemCount: postProvider.posts.length + 1, // +1 for footer
-            itemBuilder: (context, index) {
-              if (index == postProvider.posts.length) {
-                // Footer
-                return const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: CompactFooter(),
-                );
-              }
-
-              final post = postProvider.posts[index];
-              return PostCard(
-                post: post,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
-                    ),
-                  );
-                },
-                onUpvote: () => postProvider.toggleUpvote(post.id),
-                onDownvote: () => postProvider.toggleDownvote(post.id),
-                onComment: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
-                    ),
-                  );
-                },
-                onReport: () => _showReportDialog(post.id),
-              );
-            },
+          child: CustomScrollView(
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final post = postProvider.posts[index];
+                    return PostCard(
+                      post: post,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PostDetailScreen(postId: post.id),
+                          ),
+                        );
+                      },
+                      onUpvote: () => postProvider.toggleUpvote(post.id),
+                      onDownvote: () => postProvider.toggleDownvote(post.id),
+                      onComment: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PostDetailScreen(postId: post.id),
+                          ),
+                        );
+                      },
+                      onReport: () => _showReportDialog(post.id),
+                    );
+                  },
+                  childCount: postProvider.posts.length,
+                ),
+              ),
+              // Footer as a separate sliver to prevent overflow
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 16, bottom: 16),
+                  child: const CompactFooter(),
+                ),
+              ),
+            ],
           ),
         );
       },
