@@ -1,7 +1,7 @@
 class AppConstants {
-  // API Configuration - localhost primary for development
-  static const String baseUrl = 'http://localhost:5000'; // Local development primary
-  static const String fallbackUrl = 'https://platform.up.railway.app'; // Railway fallback
+  // API Configuration - Railway primary for production
+  static const String baseUrl = 'https://platform.up.railway.app'; // Railway primary
+  static const String fallbackUrl = 'http://localhost:5000'; // Local fallback
 
   static const String apiUrl = '$baseUrl/api';
   static const String fallbackApiUrl = '$fallbackUrl/api';

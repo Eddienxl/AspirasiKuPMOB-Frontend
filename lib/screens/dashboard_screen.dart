@@ -51,11 +51,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _refreshPostsIfNeeded() {
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    // Only refresh if we have posts and it's been more than 30 seconds since last load
-    if (postProvider.posts.isNotEmpty) {
-      _refreshPosts();
-    }
+    // Always refresh to get latest posts
+    print('🔄 Dashboard: Refreshing posts...');
+    _refreshPosts();
   }
 
   Future<void> _loadInitialData() async {
@@ -244,19 +242,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDashboardTab() {
-    return Column(
-      children: [
-        // Header - make it more compact
-        _buildHeader(),
+    return RefreshIndicator(
+      onRefresh: _refreshPosts,
+      child: CustomScrollView(
+        slivers: [
+          // Header as sliver
+          SliverToBoxAdapter(
+            child: _buildHeader(),
+          ),
 
-        // Filters - make it more compact
-        _buildFilters(),
+          // Filters as sliver
+          SliverToBoxAdapter(
+            child: _buildFilters(),
+          ),
 
-        // Posts list - give it more space
-        Expanded(
-          child: _buildPostsList(),
-        ),
-      ],
+          // Posts list as sliver
+          _buildPostsSliver(),
+        ],
+      ),
     );
   }
 
@@ -266,90 +269,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(isSmallScreen ? 24 : 32),
-      margin: EdgeInsets.all(isSmallScreen ? 12 : 16),
+      padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
+      margin: EdgeInsets.all(isSmallScreen ? 8 : 12),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Row(
         children: [
           // Icon graduation cap
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.school,
-              size: isSmallScreen ? 32 : 40,
+              size: isSmallScreen ? 24 : 28,
               color: Colors.white,
             ),
           ),
 
-          SizedBox(height: isSmallScreen ? 16 : 20),
+          const SizedBox(width: 16),
 
-          // Welcome text
-          Text(
-            'Selamat Datang\ndi AspirasiKu',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: isSmallScreen ? 24 : 28,
-              height: 1.2,
+          // Text content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome text
+                Text(
+                  'AspirasiKu Dashboard',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: isSmallScreen ? 18 : 20,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // Subtitle
+                Text(
+                  'Platform aspirasi mahasiswa UIN Suska Riau',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: isSmallScreen ? 12 : 13,
+                  ),
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
 
-          SizedBox(height: isSmallScreen ? 8 : 12),
-
-          // Subtitle
-          Text(
-            'Sampaikan aspirasi dan pertanyaan Anda\nuntuk UIN Suska Riau',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: isSmallScreen ? 14 : 16,
-              height: 1.4,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          SizedBox(height: isSmallScreen ? 20 : 24),
-
-          // Lihat Aspirasi Button
+          // Action button
           ElevatedButton.icon(
             onPressed: () {
-              // Scroll to posts section
-              _scrollToPostsSection();
+              setState(() {
+                _currentIndex = 2; // Navigate to Add Post
+              });
             },
-            icon: const Icon(Icons.visibility, size: 18),
-            label: const Text(
-              'Lihat Aspirasi',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Buat'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.primary,
               padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen ? 24 : 32,
-                vertical: isSmallScreen ? 12 : 16,
+                horizontal: isSmallScreen ? 12 : 16,
+                vertical: isSmallScreen ? 8 : 10,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 4,
+              elevation: 0,
+              textStyle: TextStyle(
+                fontSize: isSmallScreen ? 12 : 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -495,18 +498,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildPostsList() {
+  Widget _buildPostsSliver() {
     return Consumer<PostProvider>(
       builder: (context, postProvider, child) {
         if (postProvider.isLoading && postProvider.posts.isEmpty) {
-          return const Center(
-            child: CircularProgressIndicator(),
+          return SliverToBoxAdapter(
+            child: Container(
+              height: 200,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
           );
         }
 
         if (postProvider.error != null) {
-          return Center(
-            child: Padding(
+          return SliverToBoxAdapter(
+            child: Container(
               padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -541,8 +549,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
 
         if (postProvider.posts.isEmpty) {
-          return Center(
-            child: Padding(
+          return SliverToBoxAdapter(
+            child: Container(
               padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -569,7 +577,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ElevatedButton.icon(
                     onPressed: () {
                       setState(() {
-                        _currentIndex = 1;
+                        _currentIndex = 2; // Navigate to Add Post
                       });
                     },
                     icon: const Icon(Icons.add),
@@ -581,48 +589,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: _refreshPosts,
-          child: CustomScrollView(
-            slivers: [
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final post = postProvider.posts[index];
-                    return PostCard(
-                      post: post,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PostDetailScreen(postId: post.id),
-                          ),
-                        );
-                      },
-                      onUpvote: () => postProvider.toggleUpvote(post.id),
-                      onDownvote: () => postProvider.toggleDownvote(post.id),
-                      onComment: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PostDetailScreen(postId: post.id),
-                          ),
-                        );
-                      },
-                      onReport: () => _showReportDialog(post.id),
-                    );
-                  },
-                  childCount: postProvider.posts.length,
-                ),
-              ),
-              // Footer as a separate sliver to prevent overflow
-              SliverToBoxAdapter(
-                child: Container(
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index == postProvider.posts.length) {
+                // Footer
+                return Container(
                   margin: const EdgeInsets.only(top: 16, bottom: 16),
                   child: const CompactFooter(),
-                ),
-              ),
-            ],
+                );
+              }
+
+              final post = postProvider.posts[index];
+              return PostCard(
+                post: post,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PostDetailScreen(postId: post.id),
+                    ),
+                  );
+                },
+                onUpvote: () => postProvider.toggleUpvote(post.id),
+                onDownvote: () => postProvider.toggleDownvote(post.id),
+                onComment: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PostDetailScreen(postId: post.id),
+                    ),
+                  );
+                },
+                onReport: () => _showReportDialog(post.id),
+              );
+            },
+            childCount: postProvider.posts.length + 1, // +1 for footer
           ),
         );
       },
@@ -643,13 +645,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _scrollToPostsSection() {
-    // Scroll to the posts section (after filters)
-    // This is a simple implementation - you could use ScrollController for more precise control
-    setState(() {
-      // This will trigger a rebuild and the user can see the posts section
-    });
-  }
+
 
   String _getCategoryDisplayName() {
     if (_selectedCategory == 'semua') {

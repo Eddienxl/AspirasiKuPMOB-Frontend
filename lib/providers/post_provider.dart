@@ -28,7 +28,7 @@ class PostProvider with ChangeNotifier {
     if (refresh || _posts.isEmpty) {
       _setLoading(true);
     }
-    
+
     _clearError();
     _currentFilter = filter;
     _currentSort = sort;
@@ -46,6 +46,7 @@ class PostProvider with ChangeNotifier {
           ? '${AppConstants.postEndpoint}?$queryString'
           : AppConstants.postEndpoint;
 
+      print('🔄 Loading posts from: $endpoint');
       final response = await _apiService.get(endpoint);
 
       // Handle different response formats
@@ -53,19 +54,21 @@ class PostProvider with ChangeNotifier {
 
       if (response is List) {
         postsData = response as List<dynamic>;
-      } else      if (response.containsKey('data') && response['data'] is List) {
+      } else if (response.containsKey('data') && response['data'] is List) {
         postsData = response['data'] as List<dynamic>;
       } else if (response.containsKey('postingan') && response['postingan'] is List) {
         postsData = response['postingan'] as List<dynamic>;
       } else if (response.containsKey('posts') && response['posts'] is List) {
         postsData = response['posts'] as List<dynamic>;
       }
-    
 
+      print('📊 Loaded ${postsData.length} posts from API');
       _posts = postsData.map((json) => Post.fromJson(json as Map<String, dynamic>)).toList();
       _clearError();
       notifyListeners();
+      print('✅ Posts updated in provider: ${_posts.length} posts');
     } catch (e) {
+      print('❌ Error loading posts: $e');
       String errorMessage = e.toString().replaceAll('Exception: ', '');
 
       // Provide more user-friendly error messages
