@@ -7,6 +7,7 @@ import 'providers/post_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/comment_provider.dart';
 import 'providers/app_notification_provider.dart';
+import 'providers/admin_provider.dart';
 import 'screens/splash_screen.dart';
 import 'utils/app_colors.dart';
 
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => CommentProvider()),
         ChangeNotifierProvider(create: (_) => AppNotificationProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
         title: 'AspirasiKu',

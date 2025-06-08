@@ -1,0 +1,146 @@
+import '../models/report_model.dart';
+import '../models/post_model.dart';
+import '../utils/constants.dart';
+import 'api_service.dart';
+
+class AdminService {
+  final ApiService _apiService = ApiService();
+
+  // Get all reports
+  Future<List<Report>> getAllReports() async {
+    try {
+      final response = await _apiService.get('${AppConstants.interactionEndpoint}?tipe=lapor');
+
+      List<dynamic> reportsJson = [];
+
+      if (response is List) {
+        reportsJson = response as List<dynamic>;
+      } else if (response is Map<String, dynamic>) {
+        if (response['data'] != null && response['data'] is List) {
+          reportsJson = response['data'] as List<dynamic>;
+        } else if (response.containsKey('message') && response['message'] != null) {
+          throw Exception(response['message']);
+        }
+      }
+
+      return reportsJson
+          .map((json) => Report.fromJson(json))
+          .toList();
+    } catch (e) {
+      if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (e.toString().contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else {
+        throw Exception('Gagal memuat laporan: ${e.toString().replaceAll('Exception: ', '')}');
+      }
+    }
+  }
+
+  // Get all posts (for admin management)
+  Future<List<Post>> getAllPosts() async {
+    try {
+      final response = await _apiService.get('${AppConstants.postEndpoint}/admin');
+
+      List<dynamic> postsJson = [];
+
+      if (response is List) {
+        postsJson = response as List<dynamic>;
+      } else if (response is Map<String, dynamic>) {
+        if (response['data'] != null && response['data'] is List) {
+          postsJson = response['data'] as List<dynamic>;
+        } else if (response.containsKey('message') && response['message'] != null) {
+          throw Exception(response['message']);
+        }
+      }
+
+      return postsJson
+          .map((json) => Post.fromJson(json))
+          .toList();
+    } catch (e) {
+      // Fallback to regular posts endpoint if admin endpoint doesn't exist
+      if (e.toString().contains('404')) {
+        try {
+          final response = await _apiService.get(AppConstants.postEndpoint);
+          
+          List<dynamic> postsJson = [];
+          if (response is List) {
+            postsJson = response as List<dynamic>;
+          } else if (response is Map<String, dynamic> && response['data'] is List) {
+            postsJson = response['data'] as List<dynamic>;
+          }
+
+          return postsJson
+              .map((json) => Post.fromJson(json))
+              .toList();
+        } catch (fallbackError) {
+          throw Exception('Gagal memuat postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
+        }
+      }
+
+      if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (e.toString().contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else {
+        throw Exception('Gagal memuat postingan: ${e.toString().replaceAll('Exception: ', '')}');
+      }
+    }
+  }
+
+  // Ignore report
+  Future<bool> ignoreReport(int reportId) async {
+    try {
+      await _apiService.delete('${AppConstants.interactionEndpoint}/$reportId');
+      return true;
+    } catch (e) {
+      throw Exception('Gagal mengabaikan laporan: ${e.toString().replaceAll('Exception: ', '')}');
+    }
+  }
+
+  // Archive post
+  Future<bool> archivePost(int postId) async {
+    try {
+      await _apiService.put('${AppConstants.postEndpoint}/$postId/arsip', {});
+      return true;
+    } catch (e) {
+      // Fallback method if specific endpoint doesn't exist
+      try {
+        await _apiService.put('${AppConstants.postEndpoint}/$postId', {
+          'status': 'terarsip'
+        });
+        return true;
+      } catch (fallbackError) {
+        throw Exception('Gagal mengarsipkan postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
+      }
+    }
+  }
+
+  // Activate post
+  Future<bool> activatePost(int postId) async {
+    try {
+      await _apiService.put('${AppConstants.postEndpoint}/$postId/aktif', {});
+      return true;
+    } catch (e) {
+      // Fallback method if specific endpoint doesn't exist
+      try {
+        await _apiService.put('${AppConstants.postEndpoint}/$postId', {
+          'status': 'aktif'
+        });
+        return true;
+      } catch (fallbackError) {
+        throw Exception('Gagal mengaktifkan postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
+      }
+    }
+  }
+
+  // Delete post
+  Future<bool> deletePost(int postId) async {
+    try {
+      await _apiService.delete('${AppConstants.postEndpoint}/$postId');
+      return true;
+    } catch (e) {
+      throw Exception('Gagal menghapus postingan: ${e.toString().replaceAll('Exception: ', '')}');
+    }
+  }
+}

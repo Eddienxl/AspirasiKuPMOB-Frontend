@@ -1,3 +1,5 @@
+import '../utils/time_utils.dart';
+
 class AppNotification {
   final int id;
   final int idPenerima;
@@ -30,27 +32,64 @@ class AppNotification {
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
+    // Parse datetime with better error handling
+    DateTime parsedDate;
+    try {
+      if (json['dibuat_pada'] != null) {
+        parsedDate = DateTime.parse(json['dibuat_pada']);
+      } else if (json['createdAt'] != null) {
+        parsedDate = DateTime.parse(json['createdAt']);
+      } else {
+        parsedDate = DateTime.now();
+      }
+    } catch (e) {
+      parsedDate = DateTime.now();
+    }
+
     return AppNotification(
-      id: json['id'] ?? 0,
-      idPenerima: json['id_penerima'] ?? 0,
-      idPengirim: json['id_pengirim'],
-      idPostingan: json['id_postingan'],
-      idKomentar: json['id_komentar'],
-      tipe: json['tipe'] ?? '',
-      judul: json['judul'] ?? '',
-      pesan: json['pesan'] ?? '',
-      dibaca: json['dibaca'] ?? false,
-      dibuatPada: DateTime.parse(json['dibuat_pada'] ?? DateTime.now().toIso8601String()),
-      pengirim: json['pengirim'] != null 
+      id: _parseInt(json['id']) ?? 0,
+      idPenerima: _parseInt(json['id_penerima']) ?? 0,
+      idPengirim: _parseInt(json['id_pengirim']),
+      idPostingan: _parseInt(json['id_postingan']),
+      idKomentar: _parseInt(json['id_komentar']),
+      tipe: json['tipe']?.toString() ?? '',
+      judul: json['judul']?.toString() ?? '',
+      pesan: json['pesan']?.toString() ?? '',
+      dibaca: _parseBool(json['dibaca']) ?? false,
+      dibuatPada: parsedDate,
+      pengirim: json['pengirim'] != null
           ? NotificationSender.fromJson(json['pengirim'])
           : null,
-      postingan: json['postingan'] != null 
+      postingan: json['postingan'] != null
           ? NotificationPost.fromJson(json['postingan'])
           : null,
-      komentar: json['komentar'] != null 
+      komentar: json['komentar'] != null
           ? NotificationComment.fromJson(json['komentar'])
           : null,
     );
+  }
+
+  // Helper method to safely parse integers
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
+  }
+
+  // Helper method to safely parse booleans
+  static bool? _parseBool(dynamic value) {
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is String) {
+      return value.toLowerCase() == 'true' || value == '1';
+    }
+    if (value is int) {
+      return value == 1;
+    }
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -74,25 +113,14 @@ class AppNotification {
   // Helper methods
   bool get isUnread => !dibaca;
   
-  String get timeAgo {
-    final now = DateTime.now();
-    final difference = now.difference(dibuatPada);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays} hari yang lalu';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} jam yang lalu';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} menit yang lalu';
-    } else {
-      return 'Baru saja';
-    }
-  }
+  String get timeAgo => TimeUtils.timeAgo(dibuatPada);
 
   String get typeDisplayName {
     switch (tipe) {
       case 'like':
         return 'Suka';
+      case 'downvote':
+        return 'Tidak Suka';
       case 'comment':
         return 'Komentar';
       case 'reply':

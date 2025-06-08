@@ -48,7 +48,20 @@ class AppNotificationProvider with ChangeNotifier {
       _notifications = notifications;
       _updateUnreadCount();
     } catch (e) {
-      _setError(e.toString());
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      // Provide user-friendly error messages
+      if (errorMessage.contains('Session expired') || errorMessage.contains('Token')) {
+        _setError('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (errorMessage.contains('Connection') || errorMessage.contains('network')) {
+        _setError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else if (errorMessage.contains('404')) {
+        _setError('Layanan notifikasi tidak tersedia saat ini');
+      } else if (errorMessage.contains('500')) {
+        _setError('Terjadi kesalahan pada server. Silakan coba lagi nanti.');
+      } else {
+        _setError(errorMessage.isEmpty ? 'Gagal memuat notifikasi' : errorMessage);
+      }
     } finally {
       _setLoading(false);
     }

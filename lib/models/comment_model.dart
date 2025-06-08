@@ -1,3 +1,5 @@
+import '../utils/time_utils.dart';
+
 class Comment {
   final int id;
   final int idPostingan;
@@ -74,6 +76,8 @@ class Comment {
       isAuthor: isAuthor ?? this.isAuthor,
     );
   }
+
+  String get timeAgo => TimeUtils.timeAgo(dibuatPada);
 
   @override
   String toString() {

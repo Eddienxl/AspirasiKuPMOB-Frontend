@@ -300,6 +300,8 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
     switch (type) {
       case 'like':
         return Icons.favorite;
+      case 'downvote':
+        return Icons.thumb_down;
       case 'comment':
         return Icons.comment;
       case 'reply':
@@ -317,6 +319,8 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
     switch (type) {
       case 'like':
         return Colors.red;
+      case 'downvote':
+        return Colors.orange;
       case 'comment':
         return AppColors.primary;
       case 'reply':

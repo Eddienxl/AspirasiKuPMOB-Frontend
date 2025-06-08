@@ -148,10 +148,18 @@ class _AddPostScreenState extends State<AddPostScreen> {
           // Mobile layout with drawer
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Buat Aspirasi'),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               elevation: 0,
+              automaticallyImplyLeading: false, // Remove default hamburger menu
+              actions: [
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                ),
+              ],
             ),
             drawer: Drawer(
               child: AppSidebar(
@@ -432,7 +440,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
       showOverlay: true,
       overlayOpacity: 0.1,
       appBar: AppBar(
-        title: const Text('Buat Aspirasi'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,

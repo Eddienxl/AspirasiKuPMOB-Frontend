@@ -1,5 +1,6 @@
 import 'user_model.dart';
 import 'category_model.dart';
+import '../utils/time_utils.dart';
 
 class Post {
   final int id;
@@ -130,6 +131,8 @@ class Post {
 
   bool get hasUserUpvoted => userInteraction == 'upvote';
   bool get hasUserDownvoted => userInteraction == 'downvote';
+
+  String get timeAgo => TimeUtils.timeAgo(dibuatPada);
 
   @override
   String toString() {

@@ -7,6 +7,8 @@ import '../providers/auth_provider.dart';
 import '../widgets/post_detail_card.dart';
 import '../widgets/comments_section.dart';
 import '../widgets/report_dialog.dart';
+import '../widgets/campus_background.dart';
+import '../utils/app_colors.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final int postId;
@@ -303,20 +305,38 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF4A7C59),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : _post == null
-                ? const Center(
-                    child: Text(
-                      'Postingan tidak ditemukan',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  )
-                : _buildContent(),
+    return CampusBackgroundScaffold(
+      showOverlay: true,
+      overlayOpacity: 0.1,
+      appBar: AppBar(
+        title: const Text('Detail Aspirasi'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _post == null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.article_outlined,
+                        size: 64,
+                        color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Postingan tidak ditemukan',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : _buildContent(),
     );
   }
 
@@ -325,30 +345,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Back button
-          Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-              ),
-              const Expanded(
-                child: Text(
-                  'Detail Aspirasi',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(width: 48), // Balance the back button
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
           // Post Detail Card
           PostDetailCard(
             post: _post!,

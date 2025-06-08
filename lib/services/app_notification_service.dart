@@ -16,23 +16,41 @@ class AppNotificationService {
       if (response is List) {
         // Direct array response
         notificationsJson = response as List<dynamic>;
-      } else      if (response['data'] != null) {
-        if (response['data'] is List) {
-          notificationsJson = response['data'] as List<dynamic>;
-        } else if (response['data'] is String && response['data'] == '[]') {
-          // Handle empty string array
+      } else if (response is Map<String, dynamic>) {
+        // Check for various possible response structures
+        if (response['data'] != null) {
+          if (response['data'] is List) {
+            notificationsJson = response['data'] as List<dynamic>;
+          } else if (response['data'] is String && response['data'] == '[]') {
+            // Handle empty string array
+            notificationsJson = [];
+          }
+        } else if (response['notifikasi'] != null && response['notifikasi'] is List) {
+          notificationsJson = response['notifikasi'] as List<dynamic>;
+        } else if (response.containsKey('message') && response['message'] != null) {
+          // Handle error response
+          throw Exception(response['message']);
+        } else {
+          // If response is a map but doesn't contain expected keys, treat as empty
           notificationsJson = [];
         }
-      } else if (response['notifikasi'] != null && response['notifikasi'] is List) {
-        notificationsJson = response['notifikasi'] as List<dynamic>;
+      } else {
+        // Unexpected response format
+        notificationsJson = [];
       }
-    
 
       return notificationsJson
           .map((json) => AppNotification.fromJson(json))
           .toList();
     } catch (e) {
-      throw Exception('Failed to load notifications: $e');
+      // Provide more specific error messages
+      if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (e.toString().contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+      } else {
+        throw Exception('Gagal memuat notifikasi: ${e.toString().replaceAll('Exception: ', '')}');
+      }
     }
   }
 
