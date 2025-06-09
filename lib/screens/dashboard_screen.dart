@@ -52,7 +52,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _refreshPostsIfNeeded() {
     // Always refresh to get latest posts
-    print('🔄 Dashboard: Refreshing posts...');
     _refreshPosts();
   }
 
@@ -561,7 +560,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context, postProvider, child) {
         if (postProvider.isLoading && postProvider.posts.isEmpty) {
           return SliverToBoxAdapter(
-            child: Container(
+            child: SizedBox(
               height: 200,
               child: const Center(
                 child: CircularProgressIndicator(),

@@ -150,7 +150,7 @@ class ApiService {
   dynamic _handleResponse(http.Response response) {
     final statusCode = response.statusCode;
     debugPrint('📊 Response status: $statusCode');
-    debugPrint('📄 Response body preview: ${response.body.length > 200 ? response.body.substring(0, 200) + "..." : response.body}');
+    debugPrint('📄 Response body preview: ${response.body.length > 200 ? "${response.body.substring(0, 200)}..." : response.body}');
 
     if (statusCode >= 200 && statusCode < 300) {
       // Success

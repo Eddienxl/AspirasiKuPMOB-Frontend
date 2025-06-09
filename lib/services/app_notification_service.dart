@@ -15,7 +15,7 @@ class AppNotificationService {
 
       if (response is List) {
         // Direct array response
-        notificationsJson = response as List<dynamic>;
+        notificationsJson = response;
       } else if (response is Map<String, dynamic>) {
         // Check for various possible response structures
         if (response['data'] != null) {

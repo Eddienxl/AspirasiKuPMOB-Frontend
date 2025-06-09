@@ -192,10 +192,6 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
         return;
       }
 
-      // Show image info
-      final imageInfo = await _avatarService.getImageInfo(imageFile);
-      print('📸 Selected image: ${imageInfo['name']} (${imageInfo['sizeFormatted']})');
-
       // Upload to server
       final avatarUrl = await _avatarService.uploadAvatar(imageFile);
 

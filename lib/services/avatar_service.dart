@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'api_service.dart';
 import '../utils/constants.dart';
@@ -59,8 +57,7 @@ class AvatarService {
       );
 
       // Extract the profile picture URL from response
-      if (response is Map<String, dynamic> && 
-          response['user'] != null && 
+      if (response['user'] != null &&
           response['user']['profile_picture'] != null) {
         return response['user']['profile_picture'];
       }
@@ -92,12 +89,7 @@ class AvatarService {
     return ['jpg', 'jpeg'].contains(extension);
   }
 
-  /// Compress image if needed (for web)
-  Future<Uint8List> _compressImage(Uint8List bytes) async {
-    // For web, we can implement image compression here if needed
-    // For now, we'll rely on the picker's built-in compression
-    return bytes;
-  }
+
 
   /// Get image size info
   Future<Map<String, dynamic>> getImageInfo(XFile imageFile) async {

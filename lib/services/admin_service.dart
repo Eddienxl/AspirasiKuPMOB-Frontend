@@ -14,7 +14,7 @@ class AdminService {
       List<dynamic> reportsJson = [];
 
       if (response is List) {
-        reportsJson = response as List<dynamic>;
+        reportsJson = response;
       } else if (response is Map<String, dynamic>) {
         if (response['data'] != null && response['data'] is List) {
           reportsJson = response['data'] as List<dynamic>;

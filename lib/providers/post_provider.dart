@@ -63,42 +63,27 @@ class PostProvider with ChangeNotifier {
           ? '${AppConstants.postEndpoint}?$queryString'
           : AppConstants.postEndpoint;
 
-      print('🔄 Loading posts from: $endpoint');
       final response = await _apiService.get(endpoint);
-      print('📦 Raw response type: ${response.runtimeType}');
 
       // Handle different response formats
       List<dynamic> postsData = [];
 
       if (response is List) {
-        print('✅ Response is direct array');
         postsData = response;
       } else if (response is Map<String, dynamic>) {
-        print('✅ Response is object, checking for data fields...');
         if (response.containsKey('data') && response['data'] is List) {
-          print('✅ Found data field with array');
           postsData = response['data'] as List<dynamic>;
         } else if (response.containsKey('postingan') && response['postingan'] is List) {
-          print('✅ Found postingan field with array');
           postsData = response['postingan'] as List<dynamic>;
         } else if (response.containsKey('posts') && response['posts'] is List) {
-          print('✅ Found posts field with array');
           postsData = response['posts'] as List<dynamic>;
-        } else {
-          print('❌ No recognized array field found in response');
-          print('📋 Available keys: ${response.keys.toList()}');
         }
-      } else {
-        print('❌ Unexpected response format: ${response.runtimeType}');
       }
 
-      print('📊 Loaded ${postsData.length} posts from API');
       _posts = postsData.map((json) => Post.fromJson(json as Map<String, dynamic>)).toList();
       _clearError();
       notifyListeners();
-      print('✅ Posts updated in provider: ${_posts.length} posts');
     } catch (e) {
-      print('❌ Error loading posts: $e');
       String errorMessage = e.toString().replaceAll('Exception: ', '');
 
       // Provide more user-friendly error messages

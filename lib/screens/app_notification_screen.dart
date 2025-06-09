@@ -53,9 +53,13 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
                   if (notificationProvider.unreadCount > 0) {
                     return TextButton(
                       onPressed: () async {
+                        // Capture ScaffoldMessenger before async operation
+                        final scaffoldMessenger = ScaffoldMessenger.of(context);
+
                         await notificationProvider.markAllAsRead();
+
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          scaffoldMessenger.showSnackBar(
                             const SnackBar(
                               content: Text('Semua notifikasi ditandai sudah dibaca'),
                               backgroundColor: AppColors.success,
