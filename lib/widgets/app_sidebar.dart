@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/app_notification_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/user_avatar.dart';
 import '../screens/login_screen.dart';
 
 class AppSidebar extends StatelessWidget {
@@ -340,18 +341,11 @@ class AppSidebar extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    // Avatar
-                    CircleAvatar(
+                    // Avatar with profile picture support
+                    UserAvatar(
+                      profilePictureUrl: user.profilePicture,
+                      userName: user.nama,
                       radius: 20,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                      child: Text(
-                        user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
                     ),
 
                     const SizedBox(width: 12),

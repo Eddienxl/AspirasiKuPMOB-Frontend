@@ -79,13 +79,10 @@ class AdminService {
     }
   }
 
-  // Archive post - Since backend doesn't support status field, we'll use delete for now
+  // Archive post
   Future<bool> archivePost(int postId) async {
     try {
-      // Since backend doesn't support archive status, we'll delete the post
-      // This is a temporary solution until backend supports archive functionality
-      await _apiService.delete('${AppConstants.postEndpoint}/$postId');
-
+      await _apiService.post('${AppConstants.postEndpoint}/$postId/archive', {});
       return true;
     } catch (e) {
       // Provide detailed error messages based on HTTP status
@@ -97,9 +94,6 @@ class AdminService {
         throw Exception('Anda tidak memiliki izin untuk mengarsipkan postingan ini');
       } else if (errorMessage.contains('401')) {
         throw Exception('Sesi Anda telah berakhir, silakan login kembali');
-      } else if (errorMessage.contains('ForeignKeyConstraintError') ||
-                 errorMessage.contains('still referenced')) {
-        throw Exception('Postingan tidak dapat diarsipkan karena masih memiliki komentar atau interaksi. Hapus semua komentar terlebih dahulu.');
       } else if (errorMessage.contains('500')) {
         throw Exception('Terjadi kesalahan server. Silakan coba lagi nanti');
       } else if (errorMessage.contains('Connection')) {
@@ -113,17 +107,24 @@ class AdminService {
   // Activate post
   Future<bool> activatePost(int postId) async {
     try {
-      await _apiService.put('${AppConstants.postEndpoint}/$postId/aktif', {});
+      await _apiService.post('${AppConstants.postEndpoint}/$postId/activate', {});
       return true;
     } catch (e) {
-      // Fallback method if specific endpoint doesn't exist
-      try {
-        await _apiService.put('${AppConstants.postEndpoint}/$postId', {
-          'status': 'aktif'
-        });
-        return true;
-      } catch (fallbackError) {
-        throw Exception('Gagal mengaktifkan postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
+      // Provide detailed error messages
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      if (errorMessage.contains('404')) {
+        throw Exception('Postingan tidak ditemukan');
+      } else if (errorMessage.contains('403')) {
+        throw Exception('Anda tidak memiliki izin untuk mengaktifkan postingan ini');
+      } else if (errorMessage.contains('401')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (errorMessage.contains('500')) {
+        throw Exception('Terjadi kesalahan server. Silakan coba lagi nanti');
+      } else if (errorMessage.contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda');
+      } else {
+        throw Exception('Gagal mengaktifkan postingan: $errorMessage');
       }
     }
   }

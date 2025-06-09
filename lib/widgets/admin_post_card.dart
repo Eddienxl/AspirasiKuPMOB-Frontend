@@ -148,8 +148,12 @@ class AdminPostCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.orange,
                         side: BorderSide(color: Colors.orange.withValues(alpha: 0.3)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      child: const Text('Arsipkan'),
+                      child: const Text(
+                        'Arsipkan',
+                        style: TextStyle(fontSize: 13),
+                      ),
                     ),
                   ),
                 ] else ...[
@@ -159,8 +163,12 @@ class AdminPostCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.success,
                         foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      child: const Text('Aktifkan'),
+                      child: const Text(
+                        'Aktifkan',
+                        style: TextStyle(fontSize: 13),
+                      ),
                     ),
                   ),
                 ],
@@ -171,8 +179,12 @@ class AdminPostCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.error,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
-                    child: const Text('Hapus'),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(fontSize: 13),
+                    ),
                   ),
                 ),
               ],

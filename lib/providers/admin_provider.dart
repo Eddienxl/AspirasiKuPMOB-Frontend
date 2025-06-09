@@ -110,8 +110,11 @@ class AdminProvider with ChangeNotifier {
       if (success) {
         // Remove report from local list
         _reports.removeWhere((report) => report.id == reportId);
-        // Remove post from all posts list (since it's actually deleted)
-        _allPosts.removeWhere((post) => post.id == postId);
+        // Update post status in all posts list
+        final postIndex = _allPosts.indexWhere((post) => post.id == postId);
+        if (postIndex != -1) {
+          _allPosts[postIndex] = _allPosts[postIndex].copyWith(status: 'terarsip');
+        }
         notifyListeners();
         return true;
       }
@@ -150,8 +153,11 @@ class AdminProvider with ChangeNotifier {
     try {
       final success = await _adminService.archivePost(postId);
       if (success) {
-        // Remove post from local list (since it's actually deleted)
-        _allPosts.removeWhere((post) => post.id == postId);
+        // Update post status in local list
+        final postIndex = _allPosts.indexWhere((post) => post.id == postId);
+        if (postIndex != -1) {
+          _allPosts[postIndex] = _allPosts[postIndex].copyWith(status: 'terarsip');
+        }
         notifyListeners();
         return true;
       }

@@ -94,6 +94,18 @@ class ApiService {
     });
   }
 
+  // Generic PATCH request
+  Future<Map<String, dynamic>> patch(String endpoint, Map<String, dynamic> data) async {
+    return await _makeRequest(() async {
+      final url = Uri.parse('$_apiUrl$endpoint');
+      return await http.patch(
+        url,
+        headers: _headers,
+        body: json.encode(data),
+      );
+    });
+  }
+
   // Generic DELETE request
   Future<Map<String, dynamic>> delete(String endpoint) async {
     return await _makeRequest(() async {

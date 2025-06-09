@@ -26,6 +26,14 @@ class Report {
   });
 
   factory Report.fromJson(Map<String, dynamic> json) {
+    // Handle both 'pelapor' and 'pengguna' keys for reporter information
+    User? reporter;
+    if (json['pelapor'] != null) {
+      reporter = User.fromJson(json['pelapor']);
+    } else if (json['pengguna'] != null) {
+      reporter = User.fromJson(json['pengguna']);
+    }
+
     return Report(
       id: json['id'] ?? 0,
       idPengguna: json['id_pengguna'] ?? 0,
@@ -34,7 +42,7 @@ class Report {
       tipe: json['tipe'] ?? '',
       alasanLaporan: json['alasan_laporan'],
       dibuatPada: TimeUtils.parseDateTime(json['dibuat_pada']) ?? DateTime.now(),
-      pelapor: json['pelapor'] != null ? User.fromJson(json['pelapor']) : null,
+      pelapor: reporter,
       postingan: json['postingan'] != null ? Post.fromJson(json['postingan']) : null,
     );
   }

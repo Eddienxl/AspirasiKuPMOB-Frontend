@@ -395,6 +395,54 @@ class PostProvider with ChangeNotifier {
     }
   }
 
+  // Archive post
+  Future<bool> archivePost(int postId) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _apiService.patch('${AppConstants.postEndpoint}/$postId/archive', {});
+
+      // Update post status in the list
+      final index = _posts.indexWhere((post) => post.id == postId);
+      if (index != -1) {
+        _posts[index] = _posts[index].copyWith(status: 'terarsip');
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Gagal mengarsipkan postingan: ${e.toString()}');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Activate post
+  Future<bool> activatePost(int postId) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _apiService.patch('${AppConstants.postEndpoint}/$postId/activate', {});
+
+      // Update post status in the list
+      final index = _posts.indexWhere((post) => post.id == postId);
+      if (index != -1) {
+        _posts[index] = _posts[index].copyWith(status: 'aktif');
+        notifyListeners();
+      }
+
+      return true;
+    } catch (e) {
+      _setError('Gagal mengaktifkan postingan: ${e.toString()}');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // Clear posts
   void clearPosts() {
     _posts.clear();

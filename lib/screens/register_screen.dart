@@ -9,7 +9,6 @@ import '../widgets/campus_background.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/connection_status.dart';
 import 'login_screen.dart';
-import 'dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -58,31 +57,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success && mounted) {
-      // Check if user is now logged in (auto-login after registration)
-      if (authProvider.isLoggedIn) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrasi berhasil! Selamat datang!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+      // Registration successful - always redirect to login
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registrasi berhasil! Silakan login dengan akun Anda.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
 
-        // Navigate to dashboard since user is auto-logged in
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrasi berhasil! Silakan login dengan akun Anda.'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -368,7 +353,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   });
                 },
                 title: const Text('Mahasiswa'),
-                subtitle: const Text('Akun untuk mahasiswa biasa'),
+                subtitle: const Text('Akun untuk mahasiswa'),
                 activeColor: AppColors.primary,
               ),
 

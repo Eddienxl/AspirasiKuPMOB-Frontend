@@ -105,7 +105,20 @@ class AuthProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _setError(e.toString());
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      // Provide more user-friendly error messages for login
+      if (errorMessage.contains('Email atau username tidak ditemukan')) {
+        errorMessage = 'Email atau username tidak ditemukan';
+      } else if (errorMessage.contains('Kata sandi salah')) {
+        errorMessage = 'Kata sandi salah';
+      } else if (errorMessage.contains('Network error') || errorMessage.contains('Failed to fetch')) {
+        errorMessage = 'Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil.';
+      } else if (errorMessage.contains('Connection refused')) {
+        errorMessage = 'Server tidak dapat dijangkau. Silakan coba lagi.';
+      }
+
+      _setError(errorMessage);
       return false;
     } finally {
       _setLoading(false);
@@ -135,12 +148,7 @@ class AuthProvider with ChangeNotifier {
       );
 
       if (result['success'] == true) {
-        // If registration includes auto-login (token and user), set logged in state
-        if (result['token'] != null && result['user'] != null) {
-          _user = result['user'];
-          _isLoggedIn = true;
-          notifyListeners();
-        }
+        // Registration successful - user needs to login manually
         return true;
       } else {
         String errorMessage = result['message'] ?? 'Registration failed';

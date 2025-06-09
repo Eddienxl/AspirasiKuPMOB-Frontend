@@ -28,7 +28,7 @@ class AuthService {
         // Save token and user data
         await _saveAuthData(response['token'], response['user']);
         _apiService.setToken(response['token']);
-        
+
         return {
           'success': true,
           'user': User.fromJson(response['user']),
@@ -38,7 +38,16 @@ class AuthService {
         throw Exception('Invalid response from server');
       }
     } catch (e) {
-      throw Exception('Login failed: $e');
+      // Extract specific error message from backend
+      String errorMessage = e.toString();
+
+      // Remove "Exception: " prefix if present
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+
+      // Pass through the specific error message from backend
+      throw Exception(errorMessage);
     }
   }
 
@@ -72,25 +81,12 @@ class AuthService {
       );
       print('📝 AuthService: Register response received: ${response.keys}');
 
-      // Check if registration was successful
-      if (response['token'] != null && response['user'] != null) {
-        // Save token and user data for auto-login
-        await _saveAuthData(response['token'], response['user']);
-        _apiService.setToken(response['token']);
-
-        return {
-          'success': true,
-          'message': response['message'] ?? 'Registration successful',
-          'user': User.fromJson(response['user']),
-          'token': response['token'],
-        };
-      } else {
-        return {
-          'success': true,
-          'message': response['message'] ?? 'Registration successful',
-          'data': response,
-        };
-      }
+      // Registration successful - no auto-login
+      return {
+        'success': true,
+        'message': response['message'] ?? 'Registration successful',
+        'data': response,
+      };
     } catch (e) {
       print('📝 AuthService: Register error: $e');
       return {
