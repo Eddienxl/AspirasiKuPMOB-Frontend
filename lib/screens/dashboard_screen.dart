@@ -5,20 +5,17 @@ import '../providers/post_provider.dart';
 import '../providers/category_provider.dart';
 
 import '../utils/app_colors.dart';
-import '../utils/constants.dart';
+import '../widgets/campus_background.dart';
+import '../widgets/app_sidebar.dart';
 import '../widgets/post_card.dart';
 import '../widgets/category_filter.dart';
 import '../widgets/sort_dropdown.dart';
-import '../widgets/campus_background.dart';
-
-import '../widgets/app_sidebar.dart';
-import '../widgets/app_footer.dart';
 import 'home_landing_screen.dart';
 import 'add_post_screen.dart';
-import 'post_detail_screen.dart';
 import 'profile_screen.dart';
 import 'admin_panel_screen.dart';
 import 'app_notification_screen.dart';
+import 'post_detail_screen.dart';
 import 'login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -29,39 +26,23 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 0; // Start with Home tab
   String _selectedCategory = 'semua';
   String _selectedSort = 'terbaru';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadInitialData();
-    });
+    // Data will be loaded when user navigates to Dashboard tab
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Refresh posts when returning to dashboard (e.g., after creating a post)
-    if (ModalRoute.of(context)?.isCurrent == true) {
-      _refreshPostsIfNeeded();
-    }
-  }
-
-  void _refreshPostsIfNeeded() {
-    // Always refresh to get latest posts
-    _refreshPosts();
-  }
-
-  Future<void> _loadInitialData() async {
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+  Future<void> _loadDashboardData() async {
     final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
 
     // Load categories first
     await categoryProvider.loadCategories();
-    
+
     // Then load posts
     await postProvider.loadPosts(
       filter: _selectedCategory,
@@ -82,84 +63,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _selectedCategory = category;
     });
-    
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    postProvider.loadPosts(
-      filter: category,
-      sort: _selectedSort,
-      refresh: true,
-    );
+    _refreshPosts();
   }
 
   void _onSortChanged(String sort) {
     setState(() {
       _selectedSort = sort;
     });
-
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    postProvider.loadPosts(
-      filter: _selectedCategory,
-      sort: sort,
-      refresh: true,
-    );
-  }
-
-  // Handle upvote with authentication check
-  Future<void> _handleUpvote(int postId) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (!authProvider.isLoggedIn) {
-      _showLoginRequiredDialog();
-      return;
-    }
-
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    final success = await postProvider.toggleUpvote(postId);
-
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(postProvider.error ?? 'Gagal memberikan upvote'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  // Handle downvote with authentication check
-  Future<void> _handleDownvote(int postId) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (!authProvider.isLoggedIn) {
-      _showLoginRequiredDialog();
-      return;
-    }
-
-    final postProvider = Provider.of<PostProvider>(context, listen: false);
-    final success = await postProvider.toggleDownvote(postId);
-
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(postProvider.error ?? 'Gagal memberikan downvote'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  // Handle read post with authentication check
-  void _handleReadPost(int postId) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (!authProvider.isLoggedIn) {
-      _showLoginRequiredDialog();
-      return;
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PostDetailScreen(postId: postId),
-      ),
-    );
+    _refreshPosts();
   }
 
   void _handleNavigation(int index) {
@@ -172,10 +83,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         setState(() {
           _currentIndex = index;
         });
+        // Load dashboard data when navigating to dashboard
+        if (index == 1) {
+          _loadDashboardData();
+        }
         return;
       }
 
-      // For restricted pages (2: Ajukan, 3: Notifikasi, 4: Profil), redirect to login
+      // For restricted pages, redirect to login
       if (index == 2 || index == 3 || index == 4) {
         _showLoginRequiredDialog();
         return;
@@ -186,6 +101,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _currentIndex = index;
     });
+
+    // Load dashboard data when navigating to dashboard
+    if (index == 1) {
+      _loadDashboardData();
+    }
   }
 
   void _showLoginRequiredDialog() {
@@ -226,28 +146,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (showSidebar) {
       // Desktop/Tablet layout with sidebar
-      return CampusBackgroundScaffold(
-        showOverlay: true,
-        overlayOpacity: 0.1,
-        body: Row(
-          children: [
-            // Sidebar
-            AppSidebar(
-              currentIndex: _currentIndex,
-              onItemTapped: (index) {
-                _handleNavigation(index);
-              },
-            ),
+      return CampusBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Row(
+              children: [
+                // Sidebar
+                AppSidebar(
+                  currentIndex: _currentIndex,
+                  onItemTapped: _handleNavigation,
+                ),
 
-            // Main content
-            Expanded(
-              child: SafeArea(
-                child: _buildBody(),
-              ),
+                // Main content area
+                Expanded(
+                  child: _buildCurrentTab(),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-
       );
     } else {
       // Mobile layout with drawer
@@ -271,15 +189,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           showOverlay: true,
           overlayOpacity: 0.1,
           child: SafeArea(
-            child: _buildBody(),
+            child: _buildCurrentTab(),
           ),
         ),
-
       );
     }
   }
 
-  Widget _buildBody() {
+  Widget _buildCurrentTab() {
     switch (_currentIndex) {
       case 0:
         return const HomeLandingScreen();
@@ -303,17 +220,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onRefresh: _refreshPosts,
       child: CustomScrollView(
         slivers: [
-          // Header as sliver
+          // Header
           SliverToBoxAdapter(
             child: _buildHeader(),
           ),
 
-          // Filters as sliver
+          // Filters
           SliverToBoxAdapter(
             child: _buildFilters(),
           ),
 
-          // Posts list as sliver
+          // Posts list
           _buildPostsSliver(),
         ],
       ),
@@ -341,7 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Row(
         children: [
-          // Icon graduation cap
+          // Icon
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -362,7 +279,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Welcome text
                 Text(
                   'AspirasiKu Dashboard',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -371,10 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     fontSize: isSmallScreen ? 18 : 20,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
-                // Subtitle
                 Text(
                   'Platform aspirasi mahasiswa UIN Suska Riau',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -406,10 +319,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               elevation: 0,
-              textStyle: TextStyle(
-                fontSize: isSmallScreen ? 12 : 13,
-                fontWeight: FontWeight.w600,
-              ),
             ),
           ),
         ],
@@ -495,60 +404,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               selectedSort: _selectedSort,
               onSortChanged: _onSortChanged,
             ),
-
-            const SizedBox(height: 16),
-
-            // Filter aktif badges
-            Row(
-              children: [
-                Text(
-                  'Filter aktif:',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Category badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    _getCategoryDisplayName(),
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
-                // Sort badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    _getSortDisplayName(),
-                    style: const TextStyle(
-                      color: AppColors.success,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -558,6 +413,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildPostsSliver() {
     return Consumer<PostProvider>(
       builder: (context, postProvider, child) {
+        // Show welcome message if no data loaded yet
+        if (postProvider.posts.isEmpty && !postProvider.isLoading && postProvider.error == null) {
+          return SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.dashboard_outlined,
+                    size: 48,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Selamat datang di Dashboard',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Klik tombol "Buat" untuk membuat aspirasi baru',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (postProvider.isLoading && postProvider.posts.isEmpty) {
           return SliverToBoxAdapter(
             child: SizedBox(
@@ -615,7 +502,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Icon(
                     Icons.inbox_outlined,
                     size: 48,
-                    color: AppColors.textTertiary,
+                    color: AppColors.textSecondary,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -624,21 +511,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Jadilah yang pertama untuk berbagi aspirasi!',
+                    'Jadilah yang pertama membuat aspirasi!',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _currentIndex = 2; // Navigate to Add Post
-                      });
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Buat Aspirasi'),
                   ),
                 ],
               ),
@@ -649,74 +525,101 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              if (index == postProvider.posts.length) {
-                // Footer
-                return Container(
-                  margin: const EdgeInsets.only(top: 16, bottom: 16),
-                  child: const CompactFooter(),
-                );
-              }
-
               final post = postProvider.posts[index];
               return PostCard(
                 post: post,
                 onTap: () => _handleReadPost(post.id),
                 onUpvote: () => _handleUpvote(post.id),
                 onDownvote: () => _handleDownvote(post.id),
-                onComment: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
-                    ),
-                  );
-                },
-                onReport: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(postId: post.id),
-                    ),
-                  );
-                },
+                onReport: () => _handleReport(post.id),
               );
             },
-            childCount: postProvider.posts.length + 1, // +1 for footer
+            childCount: postProvider.posts.length,
           ),
         );
       },
     );
   }
 
-
-
-
-
-
-
-  String _getCategoryDisplayName() {
-    if (_selectedCategory == 'semua') {
-      return 'Semua Kategori';
+  // Handle read post with authentication check
+  void _handleReadPost(int postId) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
     }
 
-    final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
-    final id = int.parse(_selectedCategory);
-    final category = categoryProvider.getCategoryById(id);
-    return category?.nama ?? AppConstants.getCategoryName(id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PostDetailScreen(postId: postId),
+      ),
+    );
   }
 
-  String _getSortDisplayName() {
-    switch (_selectedSort) {
-      case 'terbaru':
-        return 'Terbaru';
-      case 'terlama':
-        return 'Terlama';
-      case 'terpopuler':
-        return 'Terpopuler';
-      default:
-        return 'Terbaru';
+  // Handle upvote with authentication check
+  Future<void> _handleUpvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleUpvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan upvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
+  // Handle downvote with authentication check
+  Future<void> _handleDownvote(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
 
+    final postProvider = Provider.of<PostProvider>(context, listen: false);
+    final success = await postProvider.toggleDownvote(postId);
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(postProvider.error ?? 'Gagal memberikan downvote'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle report with authentication check
+  Future<void> _handleReport(int postId) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isLoggedIn) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    // Show report dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Laporkan Postingan'),
+        content: const Text('Fitur laporan akan segera tersedia.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 }

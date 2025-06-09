@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:google_fonts/google_fonts.dart';
 import 'providers/auth_provider.dart';
 import 'providers/post_provider.dart';
 import 'providers/category_provider.dart';
@@ -14,6 +15,7 @@ import 'utils/app_colors.dart';
 void main() {
   // Set Indonesian locale for timeago
   timeago.setLocaleMessages('id', timeago.IdMessages());
+
   runApp(const MyApp());
 }
 
@@ -50,7 +52,19 @@ class MyApp extends StatelessWidget {
             seedColor: AppColors.primary,
             brightness: Brightness.light,
           ),
-          fontFamily: 'Inter',
+          textTheme: GoogleFonts.interTextTheme().copyWith(
+            // Fallback untuk karakter yang tidak didukung
+            bodyLarge: GoogleFonts.inter().copyWith(
+              fontFamilyFallback: ['Roboto', 'Arial', 'sans-serif'],
+            ),
+            bodyMedium: GoogleFonts.inter().copyWith(
+              fontFamilyFallback: ['Roboto', 'Arial', 'sans-serif'],
+            ),
+            bodySmall: GoogleFonts.inter().copyWith(
+              fontFamilyFallback: ['Roboto', 'Arial', 'sans-serif'],
+            ),
+          ),
+          fontFamily: GoogleFonts.inter().fontFamily,
           appBarTheme: AppBarTheme(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
