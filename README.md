@@ -31,8 +31,9 @@
 
 ### 📝 **Content Management**
 - **Post Creation**: Buat aspirasi dengan judul, konten, dan kategori
-- **9 Kategori Terstruktur**:
+- **10 Kategori Terstruktur**:
   - 🏫 Fasilitas Kampus
+  - 📚 Akademik
   - 💝 Kesejahteraan Mahasiswa
   - 🎭 Kegiatan Kemahasiswaan
   - 💻 Sarana dan Prasarana Digital

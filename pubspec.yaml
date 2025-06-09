@@ -35,9 +35,6 @@ dependencies:
   # Time Formatting
   timeago: ^3.6.1
 
-  # Icons
-  material_design_icons_flutter: ^7.0.7296
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -54,7 +51,5 @@ flutter:
 
   # Assets
   assets:
-    - assets/images/
-    - assets/icons/
     - assets/images/aspirasikulogo.png
     - assets/images/background.jpg
