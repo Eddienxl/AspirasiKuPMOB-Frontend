@@ -100,44 +100,6 @@ Git & GitHub              - Version Control
 
 ---
 
-## 🌐 **Deployment & Access**
-
-### **🚀 Production Deployment**
-- **Frontend**: [https://aspirasiku-frontend.vercel.app](https://aspirasiku-frontend.vercel.app) (Auto-deploy from GitHub)
-- **Backend API**: [https://platform.up.railway.app/api](https://platform.up.railway.app/api) (Auto-deploy from GitHub)
-- **Admin Panel**: Accessible through sidebar navigation (Admin only)
-
-### **💻 Local Development**
-- **Frontend**: http://localhost:3000 (Flutter Web)
-- **Backend API**: http://localhost:3000/api
-- **Admin Panel**: Integrated in main app (Admin only)
-
-### **Environment Configuration**
-```dart
-// lib/utils/constants.dart
-class AppConstants {
-  static const String baseUrl = 'https://platform.up.railway.app';
-  static const String appName = 'AspirasiKu';
-}
-```
-
-### **Development Commands**
-```bash
-# Install dependencies
-flutter pub get
-
-# Run on Chrome
-flutter run -d chrome
-
-# Build for web
-flutter build web
-
-# Run tests
-flutter test
-```
-
----
-
 ## 👥 **User Roles & Permissions**
 
 ### **👤 Mahasiswa (Regular User)**
@@ -205,84 +167,6 @@ PUT /api/notifications/read-all - Mark all as read
 
 ---
 
-## 📱 **App Structure**
-
-### **Screen Architecture**
-```
-lib/
-├── screens/
-│   ├── home_landing_screen.dart      - Landing page
-│   ├── dashboard_screen.dart         - Main dashboard (refactored)
-│   ├── login_screen.dart             - Authentication
-│   ├── register_screen.dart          - User registration
-│   ├── add_post_screen.dart          - Create new post
-│   ├── post_detail_screen.dart       - Post details & comments
-│   ├── profile_screen.dart           - User profile management
-│   ├── admin_panel_screen.dart       - Admin panel
-│   └── app_notification_screen.dart  - Notifications
-├── widgets/
-│   ├── dashboard/                    - Dashboard components
-│   ├── post_card.dart               - Post display widget
-│   ├── app_sidebar.dart             - Navigation sidebar
-│   ├── campus_background.dart       - Campus background
-│   └── category_filter.dart         - Category filtering
-├── providers/
-│   ├── auth_provider.dart           - Authentication state
-│   ├── post_provider.dart           - Post management
-│   ├── category_provider.dart       - Category management
-│   └── notification_provider.dart   - Notification state
-├── services/
-│   └── api_service.dart             - HTTP API calls
-└── utils/
-    ├── app_colors.dart              - Color constants
-    └── constants.dart               - App constants
-```
-
-### **Key Features Implementation**
-- **Responsive Design**: Sidebar for desktop, drawer for mobile
-- **State Management**: Provider pattern for reactive UI
-- **Authentication**: JWT token with auto-refresh
-- **Real-time Updates**: Polling for notifications and votes
-- **Error Handling**: Comprehensive error states and retry mechanisms
-
----
-
-## 🚀 **Getting Started**
-
-### **Prerequisites**
-```bash
-Flutter SDK (3.24.0 or higher)
-Dart SDK (3.5.0 or higher)
-Chrome browser (for web development)
-Git
-```
-
-### **Installation**
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/aspirasiku-frontend.git
-cd aspirasiku-frontend/aspirasikuflutter
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run -d chrome
-```
-
-### **Configuration**
-1. Update API base URL in `lib/utils/constants.dart`
-2. Ensure backend server is running
-3. Configure CORS settings in backend for Flutter web
-
----
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 👨‍💻 **Contributors**
 
 This project exists thanks to all the people who contributed:
@@ -290,9 +174,19 @@ This project exists thanks to all the people who contributed:
 <table>
   <tr>
     <td align="center">
-      <strong>[Nama Anda]</strong><br>
+      <strong>Ahmad Fadli Pratama</strong><br>
       <sub>Project Manager, Flutter Developer, UI/UX Designer</sub><br>
       <sub>Project management, mobile development, responsive design</sub>
+    </td>
+    <td align="center">
+      <strong>Fadlan Amar Ma'ruf</strong><br>
+      <sub>UI/UX Designer</sub><br>
+      <sub>User interface design, user experience optimization</sub>
+    </td>
+    <td align="center">
+      <strong>Wahyu Hidayat</strong><br>
+      <sub>Backend Developer, Database Architect</sub><br>
+      <sub>API development, database design</sub>
     </td>
   </tr>
 </table>
