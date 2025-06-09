@@ -35,8 +35,25 @@ class PostProvider with ChangeNotifier {
 
     try {
       final queryParams = <String, String>{};
-      if (filter != 'semua') queryParams['filter'] = filter;
-      if (sort != 'terbaru') queryParams['sort'] = sort;
+
+      // Fix category filter parameter
+      if (filter != 'semua') {
+        queryParams['kategori'] = filter; // Use 'kategori' instead of 'filter'
+      }
+
+      // Fix sort parameter mapping
+      if (sort != 'terbaru') {
+        switch (sort) {
+          case 'terlama':
+            queryParams['sort'] = 'asc'; // Ascending order for oldest first
+            break;
+          case 'terpopuler':
+            queryParams['sort'] = 'populer'; // Use 'populer' for backend
+            break;
+          default:
+            queryParams['sort'] = sort;
+        }
+      }
 
       final queryString = queryParams.entries
           .map((e) => '${e.key}=${e.value}')
@@ -99,13 +116,27 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  // Get post by ID
-  Future<Post?> getPostById(int id) async {
+  // Get single post by ID with real-time sync
+  Future<Post?> getPostById(int postId) async {
     try {
-      final response = await _apiService.get('${AppConstants.postEndpoint}/$id');
-      return Post.fromJson(response);
+      final response = await _apiService.get('${AppConstants.postEndpoint}/$postId');
+
+      if (response != null) {
+        final post = Post.fromJson(response);
+
+        // Update the post in local list if it exists for real-time sync
+        final index = _posts.indexWhere((p) => p.id == postId);
+        if (index != -1) {
+          _posts[index] = post;
+          notifyListeners();
+        }
+
+        return post;
+      }
+
+      return null;
     } catch (e) {
-      debugPrint('Error getting post by ID: $e');
+      _setError('Gagal memuat detail postingan: ${e.toString()}');
       return null;
     }
   }
@@ -207,9 +238,8 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  // Toggle upvote
+  // Toggle upvote with real-time response handling
   Future<bool> toggleUpvote(int postId) async {
-    // Optimistically update UI first for better UX
     final index = _posts.indexWhere((post) => post.id == postId);
     Post? originalPost;
 
@@ -218,6 +248,7 @@ class PostProvider with ChangeNotifier {
       final wasUpvoted = originalPost.hasUserUpvoted;
       final wasDownvoted = originalPost.hasUserDownvoted;
 
+      // Optimistic update
       _posts[index] = originalPost.copyWith(
         upvoteCount: wasUpvoted ? originalPost.upvoteCount - 1 : originalPost.upvoteCount + 1,
         downvoteCount: wasDownvoted ? originalPost.downvoteCount - 1 : originalPost.downvoteCount,
@@ -227,10 +258,32 @@ class PostProvider with ChangeNotifier {
     }
 
     try {
-      await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
+      final response = await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
         'id_postingan': postId,
         'tipe': AppConstants.upvote,
       });
+
+      // Get the actual action from server response
+      final action = response['action']; // 'added' or 'removed'
+
+      // Update with real server response to ensure consistency
+      if (index != -1 && originalPost != null) {
+        if (action == 'added') {
+          // Upvote was added
+          _posts[index] = originalPost.copyWith(
+            upvoteCount: originalPost.upvoteCount + 1,
+            downvoteCount: originalPost.hasUserDownvoted ? originalPost.downvoteCount - 1 : originalPost.downvoteCount,
+            userInteraction: AppConstants.upvote,
+          );
+        } else if (action == 'removed') {
+          // Upvote was removed
+          _posts[index] = originalPost.copyWith(
+            upvoteCount: originalPost.upvoteCount - 1,
+            userInteraction: null,
+          );
+        }
+        notifyListeners();
+      }
 
       return true;
     } catch (e) {
@@ -252,9 +305,8 @@ class PostProvider with ChangeNotifier {
     }
   }
 
-  // Toggle downvote
+  // Toggle downvote with real-time response handling
   Future<bool> toggleDownvote(int postId) async {
-    // Optimistically update UI first for better UX
     final index = _posts.indexWhere((post) => post.id == postId);
     Post? originalPost;
 
@@ -263,6 +315,7 @@ class PostProvider with ChangeNotifier {
       final wasUpvoted = originalPost.hasUserUpvoted;
       final wasDownvoted = originalPost.hasUserDownvoted;
 
+      // Optimistic update
       _posts[index] = originalPost.copyWith(
         upvoteCount: wasUpvoted ? originalPost.upvoteCount - 1 : originalPost.upvoteCount,
         downvoteCount: wasDownvoted ? originalPost.downvoteCount - 1 : originalPost.downvoteCount + 1,
@@ -272,10 +325,32 @@ class PostProvider with ChangeNotifier {
     }
 
     try {
-      await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
+      final response = await _apiService.post('${AppConstants.interactionEndpoint}/postingan', {
         'id_postingan': postId,
         'tipe': AppConstants.downvote,
       });
+
+      // Get the actual action from server response
+      final action = response['action']; // 'added' or 'removed'
+
+      // Update with real server response to ensure consistency
+      if (index != -1 && originalPost != null) {
+        if (action == 'added') {
+          // Downvote was added
+          _posts[index] = originalPost.copyWith(
+            upvoteCount: originalPost.hasUserUpvoted ? originalPost.upvoteCount - 1 : originalPost.upvoteCount,
+            downvoteCount: originalPost.downvoteCount + 1,
+            userInteraction: AppConstants.downvote,
+          );
+        } else if (action == 'removed') {
+          // Downvote was removed
+          _posts[index] = originalPost.copyWith(
+            downvoteCount: originalPost.downvoteCount - 1,
+            userInteraction: null,
+          );
+        }
+        notifyListeners();
+      }
 
       return true;
     } catch (e) {

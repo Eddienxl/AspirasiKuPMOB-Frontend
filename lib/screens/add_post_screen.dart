@@ -14,7 +14,9 @@ import '../widgets/app_sidebar.dart';
 import 'login_screen.dart';
 
 class AddPostScreen extends StatefulWidget {
-  const AddPostScreen({super.key});
+  final bool isEmbedded; // Flag to indicate if used within another screen
+
+  const AddPostScreen({super.key, this.isEmbedded = false});
 
   @override
   State<AddPostScreen> createState() => _AddPostScreenState();
@@ -115,6 +117,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
           return _buildLoginRequired();
         }
 
+        // If embedded (used within DashboardScreen), just return the content
+        if (widget.isEmbedded) {
+          return _buildAddPostContent();
+        }
+
+        // Standalone mode - show full screen with navigation
         final screenWidth = MediaQuery.of(context).size.width;
         final showSidebar = screenWidth > 768; // Show sidebar on larger screens
 
@@ -201,7 +209,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               'Judul',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: const Color.fromARGB(255, 255, 255, 255),
               ),
             ),
             const SizedBox(height: 8),
@@ -229,7 +237,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               'Kategori',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: const Color.fromARGB(255, 255, 255, 255),
               ),
             ),
 
@@ -252,7 +260,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               'Konten',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: const Color.fromARGB(255, 255, 255, 255),
               ),
             ),
             const SizedBox(height: 8),

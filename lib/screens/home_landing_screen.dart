@@ -303,7 +303,7 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
       child: Column(
         children: [
           Text(
-            'Sampaikan Aspirasi Anda',
+            '🎓 Selamat Datang di AspirasiKu',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -314,7 +314,7 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
           const SizedBox(height: 16),
           
           Text(
-            'Platform digital untuk menyampaikan aspirasi, pertanyaan, dan feedback kepada pihak universitas. Mari berpartisipasi aktif dalam pengembangan kampus!',
+            'Sampaikan aspirasi dan pertanyaan Anda untuk UIN Suska Riau',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.white.withValues(alpha: 0.9),
               fontSize: 16,
@@ -420,7 +420,7 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
             'Aspirasi Terpopuler',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: const Color.fromARGB(255, 255, 255, 255),
             ),
           ),
 
@@ -429,7 +429,7 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
           Text(
             'Lihat aspirasi yang sedang trending dari mahasiswa UIN Suska Riau',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: const Color.fromARGB(255, 253, 253, 253),
             ),
           ),
 

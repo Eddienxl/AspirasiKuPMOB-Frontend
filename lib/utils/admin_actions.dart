@@ -75,17 +75,54 @@ class AdminActions {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await adminProvider.archivePostFromReport(reportId, postId);
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success 
-                ? 'Postingan berhasil diarsipkan' 
-                : adminProvider.reportsError ?? 'Gagal mengarsipkan postingan'),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Mengarsipkan postingan...'),
+            ],
           ),
-        );
+        ),
+      );
+
+      try {
+        final success = await adminProvider.archivePostFromReport(reportId, postId);
+
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? '✅ Postingan berhasil diarsipkan'
+                  : '❌ ${adminProvider.reportsError ?? 'Gagal mengarsipkan postingan'}'),
+              backgroundColor: success ? AppColors.success : AppColors.error,
+              duration: Duration(seconds: success ? 3 : 4),
+              action: !success ? SnackBarAction(
+                label: 'Coba Lagi',
+                textColor: Colors.white,
+                onPressed: () => handleArchivePost(context, reportId, postId, adminProvider),
+              ) : null,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${e.toString()}'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }
@@ -119,17 +156,54 @@ class AdminActions {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await adminProvider.deletePostFromReport(reportId, postId);
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success 
-                ? 'Postingan berhasil dihapus' 
-                : adminProvider.reportsError ?? 'Gagal menghapus postingan'),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Menghapus postingan...'),
+            ],
           ),
-        );
+        ),
+      );
+
+      try {
+        final success = await adminProvider.deletePostFromReport(reportId, postId);
+
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? '✅ Postingan berhasil dihapus'
+                  : '❌ ${adminProvider.reportsError ?? 'Gagal menghapus postingan'}'),
+              backgroundColor: success ? AppColors.success : AppColors.error,
+              duration: Duration(seconds: success ? 3 : 4),
+              action: !success ? SnackBarAction(
+                label: 'Coba Lagi',
+                textColor: Colors.white,
+                onPressed: () => handleDeletePost(context, reportId, postId, adminProvider),
+              ) : null,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${e.toString()}'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }
@@ -162,17 +236,49 @@ class AdminActions {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await adminProvider.archivePost(postId);
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success 
-                ? 'Postingan berhasil diarsipkan' 
-                : adminProvider.postsError ?? 'Gagal mengarsipkan postingan'),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Mengarsipkan postingan...'),
+            ],
           ),
-        );
+        ),
+      );
+
+      try {
+        final success = await adminProvider.archivePost(postId);
+
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? '✅ Postingan berhasil diarsipkan'
+                  : '❌ ${adminProvider.postsError ?? 'Gagal mengarsipkan postingan'}'),
+              backgroundColor: success ? AppColors.success : AppColors.error,
+              duration: Duration(seconds: success ? 3 : 4),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${e.toString()}'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }
@@ -248,17 +354,49 @@ class AdminActions {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await adminProvider.deletePost(postId);
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success 
-                ? 'Postingan berhasil dihapus' 
-                : adminProvider.postsError ?? 'Gagal menghapus postingan'),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Menghapus postingan...'),
+            ],
           ),
-        );
+        ),
+      );
+
+      try {
+        final success = await adminProvider.deletePost(postId);
+
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(success
+                  ? '✅ Postingan berhasil dihapus'
+                  : '❌ ${adminProvider.postsError ?? 'Gagal menghapus postingan'}'),
+              backgroundColor: success ? AppColors.success : AppColors.error,
+              duration: Duration(seconds: success ? 3 : 4),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Error: ${e.toString()}'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }

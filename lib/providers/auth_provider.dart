@@ -257,6 +257,14 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Update user profile picture URL
+  void updateUserProfilePicture(String? profilePictureUrl) {
+    if (_user != null) {
+      _user = _user!.copyWith(profilePicture: profilePictureUrl);
+      notifyListeners();
+    }
+  }
+
   // Refresh user data
   Future<void> refreshUser() async {
     if (!_isLoggedIn) return;

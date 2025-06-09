@@ -9,6 +9,8 @@ class Comment {
   final DateTime diperbaruiPada;
   final String authorName;
   final bool isAuthor; // True if comment author is the post author
+  final String? authorRole; // Role of the comment author
+  final String? profilePictureUrl; // Profile picture URL of the comment author
 
   Comment({
     required this.id,
@@ -19,15 +21,24 @@ class Comment {
     required this.diperbaruiPada,
     required this.authorName,
     this.isAuthor = false,
+    this.authorRole,
+    this.profilePictureUrl,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     // Handle nested penulis object from backend
     String authorName = 'Anonymous';
+    String? authorRole;
+    String? profilePictureUrl;
+
     if (json['penulis'] != null && json['penulis']['nama'] != null) {
       authorName = json['penulis']['nama'];
+      authorRole = json['penulis']['peran']; // Get role from penulis object
+      profilePictureUrl = json['penulis']['profile_picture']; // Get profile picture from penulis object
     } else if (json['author_name'] != null) {
       authorName = json['author_name'];
+      authorRole = json['author_role']; // Get role from direct field
+      profilePictureUrl = json['author_profile_picture']; // Get profile picture from direct field
     }
 
     return Comment(
@@ -39,6 +50,8 @@ class Comment {
       diperbaruiPada: DateTime.tryParse(json['diperbarui_pada'] ?? json['dibuat_pada'] ?? '') ?? DateTime.now(),
       authorName: authorName,
       isAuthor: json['is_author'] ?? false,
+      authorRole: authorRole,
+      profilePictureUrl: profilePictureUrl,
     );
   }
 
@@ -64,6 +77,8 @@ class Comment {
     DateTime? diperbaruiPada,
     String? authorName,
     bool? isAuthor,
+    String? authorRole,
+    String? profilePictureUrl,
   }) {
     return Comment(
       id: id ?? this.id,
@@ -74,6 +89,8 @@ class Comment {
       diperbaruiPada: diperbaruiPada ?? this.diperbaruiPada,
       authorName: authorName ?? this.authorName,
       isAuthor: isAuthor ?? this.isAuthor,
+      authorRole: authorRole ?? this.authorRole,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
     );
   }
 

@@ -248,7 +248,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        floatingActionButton: _currentIndex == 1 ? _buildFloatingActionButton() : null,
+
       );
     } else {
       // Mobile layout with drawer
@@ -275,7 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: _buildBody(),
           ),
         ),
-        floatingActionButton: _currentIndex == 1 ? _buildFloatingActionButton() : null,
+
       );
     }
   }
@@ -287,7 +287,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 1:
         return _buildDashboardTab();
       case 2:
-        return const AddPostScreen();
+        return const AddPostScreen(isEmbedded: true);
       case 3:
         return const AppNotificationScreen();
       case 4:
@@ -691,17 +691,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 
 
-  Widget _buildFloatingActionButton() {
-    return FloatingActionButton(
-      onPressed: () {
-        setState(() {
-          _currentIndex = 1;
-        });
-      },
-      backgroundColor: AppColors.primary,
-      child: const Icon(Icons.add, color: Colors.white),
-    );
-  }
+
 
 
 

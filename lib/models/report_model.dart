@@ -74,7 +74,14 @@ class Report {
     }
   }
 
-  String get reporterName => pelapor?.nama ?? 'Anonim';
+  String get reporterName {
+    // Always show actual username for admin panel, never show "Anonim"
+    if (pelapor?.nama != null && pelapor!.nama.isNotEmpty) {
+      return pelapor!.nama;
+    }
+    // If no reporter name available, show a more user-friendly message
+    return 'Pengguna Tidak Dikenal';
+  }
   String get postTitle => postingan?.judul ?? 'Postingan Tidak Ditemukan';
 
   @override

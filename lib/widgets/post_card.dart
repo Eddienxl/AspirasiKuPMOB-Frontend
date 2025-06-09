@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../models/post_model.dart';
+import '../widgets/role_badge.dart';
+import '../widgets/user_avatar.dart';
 
 class PostCard extends StatelessWidget {
   final Post post;
@@ -138,18 +139,11 @@ class PostCard extends StatelessWidget {
 
     return Row(
       children: [
-        // Author avatar
-        CircleAvatar(
+        // Author avatar with profile picture support
+        UserAvatar(
+          profilePictureUrl: post.penulis?.profilePicture,
+          userName: post.authorName,
           radius: isSmallScreen ? 16 : 18,
-          backgroundColor: const Color(0xFF4CAF50),
-          child: Text(
-            post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: isSmallScreen ? 12 : 14,
-            ),
-          ),
         ),
 
         const SizedBox(width: 10),
@@ -159,18 +153,32 @@ class PostCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                post.authorName,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
-                  fontSize: isSmallScreen ? 14 : 15,
-                ),
-                overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      post.authorName,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: isSmallScreen ? 14 : 15,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Role badge for peninjau
+                  RoleBadge(
+                    userRole: post.penulis?.peran,
+                    fontSize: isSmallScreen ? 8 : 9,
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    showIcon: false,
+                  ),
+                ],
               ),
               const SizedBox(height: 2),
               Text(
-                timeago.format(post.dibuatPada, locale: 'id'),
+                post.timeAgo,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.black54,
                   fontSize: isSmallScreen ? 12 : 13,

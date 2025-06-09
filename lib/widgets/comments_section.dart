@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../providers/comment_provider.dart';
 import '../providers/auth_provider.dart';
 import 'comment_item.dart';
@@ -176,9 +175,11 @@ class _CommentsSectionState extends State<CommentsSection> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: CommentItem(
                       name: comment.authorName,
-                      time: timeago.format(comment.dibuatPada, locale: 'id'),
+                      time: comment.timeAgo,
                       comment: comment.konten,
                       isOP: comment.isAuthor,
+                      authorRole: comment.authorRole,
+                      profilePictureUrl: comment.profilePictureUrl,
                     ),
                   );
                 }).toList(),

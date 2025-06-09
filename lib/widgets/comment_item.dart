@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import '../widgets/role_badge.dart';
+import '../widgets/user_avatar.dart';
 
 class CommentItem extends StatelessWidget {
   final String name;
   final String time;
   final String comment;
   final bool isOP;
+  final String? authorRole;
+  final String? profilePictureUrl;
 
   const CommentItem({
     super.key,
@@ -12,6 +16,8 @@ class CommentItem extends StatelessWidget {
     required this.time,
     required this.comment,
     required this.isOP,
+    this.authorRole,
+    this.profilePictureUrl,
   });
 
   @override
@@ -26,17 +32,10 @@ class CommentItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
+          UserAvatar(
+            profilePictureUrl: profilePictureUrl,
+            userName: name,
             radius: 16,
-            backgroundColor: const Color(0xFF4CAF50),
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -45,16 +44,27 @@ class CommentItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                    Flexible(
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    // Role badge for peninjau
+                    RoleBadge(
+                      userRole: authorRole,
+                      fontSize: 8,
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      showIcon: false,
+                    ),
                     if (isOP) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(

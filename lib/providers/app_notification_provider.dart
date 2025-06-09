@@ -104,6 +104,8 @@ class AppNotificationProvider with ChangeNotifier {
     }
   }
 
+
+
   // Mark notification as read
   Future<bool> markAsRead(int notificationId) async {
     _clearError();

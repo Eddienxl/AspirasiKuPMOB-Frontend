@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/campus_background.dart';
 import '../widgets/glass_card.dart' as glass;
+import '../widgets/avatar_upload_widget.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -43,18 +44,15 @@ class ProfileScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      // Avatar
-                      CircleAvatar(
+                      // Avatar with upload functionality
+                      AvatarUploadWidget(
+                        currentAvatarUrl: user.profilePicture,
+                        userName: user.nama,
                         radius: 50,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                        child: Text(
-                          user.nama.isNotEmpty ? user.nama[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
+                        onAvatarChanged: (newAvatarUrl) {
+                          // Update the user's profile picture in the auth provider
+                          authProvider.updateUserProfilePicture(newAvatarUrl);
+                        },
                       ),
 
                       const SizedBox(height: 16),

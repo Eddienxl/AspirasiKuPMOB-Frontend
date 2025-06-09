@@ -40,15 +40,16 @@ class AdminService {
   // Get all posts (for admin management)
   Future<List<Post>> getAllPosts() async {
     try {
-      final response = await _apiService.get('${AppConstants.postEndpoint}/admin');
+      // Try regular posts endpoint first since admin endpoint doesn't exist
+      final response = await _apiService.get(AppConstants.postEndpoint);
 
       List<dynamic> postsJson = [];
 
       if (response is List) {
-        postsJson = response as List<dynamic>;
+        postsJson = response;
       } else if (response is Map<String, dynamic>) {
         if (response['data'] != null && response['data'] is List) {
-          postsJson = response['data'] as List<dynamic>;
+          postsJson = response['data'];
         } else if (response.containsKey('message') && response['message'] != null) {
           throw Exception(response['message']);
         }
@@ -58,26 +59,6 @@ class AdminService {
           .map((json) => Post.fromJson(json))
           .toList();
     } catch (e) {
-      // Fallback to regular posts endpoint if admin endpoint doesn't exist
-      if (e.toString().contains('404')) {
-        try {
-          final response = await _apiService.get(AppConstants.postEndpoint);
-          
-          List<dynamic> postsJson = [];
-          if (response is List) {
-            postsJson = response as List<dynamic>;
-          } else if (response is Map<String, dynamic> && response['data'] is List) {
-            postsJson = response['data'] as List<dynamic>;
-          }
-
-          return postsJson
-              .map((json) => Post.fromJson(json))
-              .toList();
-        } catch (fallbackError) {
-          throw Exception('Gagal memuat postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
-        }
-      }
-
       if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
         throw Exception('Sesi Anda telah berakhir, silakan login kembali');
       } else if (e.toString().contains('Connection')) {
@@ -98,20 +79,33 @@ class AdminService {
     }
   }
 
-  // Archive post
+  // Archive post - Since backend doesn't support status field, we'll use delete for now
   Future<bool> archivePost(int postId) async {
     try {
-      await _apiService.put('${AppConstants.postEndpoint}/$postId/arsip', {});
+      // Since backend doesn't support archive status, we'll delete the post
+      // This is a temporary solution until backend supports archive functionality
+      await _apiService.delete('${AppConstants.postEndpoint}/$postId');
+
       return true;
     } catch (e) {
-      // Fallback method if specific endpoint doesn't exist
-      try {
-        await _apiService.put('${AppConstants.postEndpoint}/$postId', {
-          'status': 'terarsip'
-        });
-        return true;
-      } catch (fallbackError) {
-        throw Exception('Gagal mengarsipkan postingan: ${fallbackError.toString().replaceAll('Exception: ', '')}');
+      // Provide detailed error messages based on HTTP status
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      if (errorMessage.contains('404')) {
+        throw Exception('Postingan tidak ditemukan atau sudah dihapus');
+      } else if (errorMessage.contains('403')) {
+        throw Exception('Anda tidak memiliki izin untuk mengarsipkan postingan ini');
+      } else if (errorMessage.contains('401')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (errorMessage.contains('ForeignKeyConstraintError') ||
+                 errorMessage.contains('still referenced')) {
+        throw Exception('Postingan tidak dapat diarsipkan karena masih memiliki komentar atau interaksi. Hapus semua komentar terlebih dahulu.');
+      } else if (errorMessage.contains('500')) {
+        throw Exception('Terjadi kesalahan server. Silakan coba lagi nanti');
+      } else if (errorMessage.contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda');
+      } else {
+        throw Exception('Gagal mengarsipkan postingan: $errorMessage');
       }
     }
   }
@@ -140,7 +134,25 @@ class AdminService {
       await _apiService.delete('${AppConstants.postEndpoint}/$postId');
       return true;
     } catch (e) {
-      throw Exception('Gagal menghapus postingan: ${e.toString().replaceAll('Exception: ', '')}');
+      // Provide detailed error messages
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      if (errorMessage.contains('404')) {
+        throw Exception('Postingan tidak ditemukan atau sudah dihapus');
+      } else if (errorMessage.contains('403')) {
+        throw Exception('Anda tidak memiliki izin untuk menghapus postingan ini');
+      } else if (errorMessage.contains('401')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      } else if (errorMessage.contains('ForeignKeyConstraintError') ||
+                 errorMessage.contains('still referenced')) {
+        throw Exception('Postingan tidak dapat dihapus karena masih memiliki komentar atau interaksi. Hapus semua komentar terlebih dahulu.');
+      } else if (errorMessage.contains('500')) {
+        throw Exception('Terjadi kesalahan server. Silakan coba lagi nanti');
+      } else if (errorMessage.contains('Connection')) {
+        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda');
+      } else {
+        throw Exception('Gagal menghapus postingan: $errorMessage');
+      }
     }
   }
 }

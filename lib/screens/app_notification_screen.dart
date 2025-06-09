@@ -27,6 +27,8 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
     await notificationProvider.loadNotifications();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -44,6 +46,7 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
+            automaticallyImplyLeading: false,
             actions: [
               Consumer<AppNotificationProvider>(
                 builder: (context, notificationProvider, child) {
@@ -343,6 +346,7 @@ class _AppNotificationScreenState extends State<AppNotificationScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: Padding(

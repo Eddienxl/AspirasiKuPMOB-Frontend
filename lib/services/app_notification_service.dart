@@ -28,8 +28,8 @@ class AppNotificationService {
         } else if (response['notifikasi'] != null && response['notifikasi'] is List) {
           notificationsJson = response['notifikasi'] as List<dynamic>;
         } else if (response.containsKey('message') && response['message'] != null) {
-          // Handle error response
-          throw Exception(response['message']);
+          // Handle error response - return empty list instead of throwing
+          return [];
         } else {
           // If response is a map but doesn't contain expected keys, treat as empty
           notificationsJson = [];
@@ -39,18 +39,32 @@ class AppNotificationService {
         notificationsJson = [];
       }
 
-      return notificationsJson
-          .map((json) => AppNotification.fromJson(json))
-          .toList();
-    } catch (e) {
-      // Provide more specific error messages
-      if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
-        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
-      } else if (e.toString().contains('Connection')) {
-        throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
-      } else {
-        throw Exception('Gagal memuat notifikasi: ${e.toString().replaceAll('Exception: ', '')}');
+      // Parse notifications with error handling for individual items
+      List<AppNotification> notifications = [];
+      for (var json in notificationsJson) {
+        try {
+          notifications.add(AppNotification.fromJson(json));
+        } catch (parseError) {
+          // Skip invalid notification and continue
+        }
       }
+
+      return notifications;
+    } catch (e) {
+      // Handle all errors gracefully by returning empty list
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      // For critical authentication errors, still throw to trigger re-login
+      if (errorMessage.contains('Session expired') ||
+          errorMessage.contains('Token') ||
+          errorMessage.contains('401') ||
+          errorMessage.contains('Unauthorized')) {
+        throw Exception('Sesi Anda telah berakhir, silakan login kembali');
+      }
+
+      // For all other errors (network, server, association, etc.), return empty list
+      // This prevents the notification page from showing error messages for non-critical issues
+      return [];
     }
   }
 
@@ -92,6 +106,8 @@ class AppNotificationService {
       };
     }
   }
+
+
 
   // Mark notification as read
   Future<Map<String, dynamic>> markAsRead(int notificationId) async {

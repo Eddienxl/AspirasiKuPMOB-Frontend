@@ -313,6 +313,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'Kembali',
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))

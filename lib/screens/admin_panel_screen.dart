@@ -62,6 +62,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
+            automaticallyImplyLeading: false,
             bottom: TabBar(
               controller: _tabController,
               indicatorColor: Colors.white,
@@ -100,6 +101,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: Padding(

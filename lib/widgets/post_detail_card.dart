@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../models/post_model.dart';
+import '../widgets/role_badge.dart';
+import '../widgets/user_avatar.dart';
 
 class PostDetailCard extends StatelessWidget {
   final Post post;
@@ -143,39 +144,48 @@ class PostDetailCard extends StatelessWidget {
   Widget _buildAuthorInfo() {
     return Row(
       children: [
-        CircleAvatar(
+        UserAvatar(
+          profilePictureUrl: post.penulis?.profilePicture,
+          userName: post.authorName,
           radius: 18,
-          backgroundColor: const Color(0xFF4CAF50),
-          child: Text(
-            post.authorName.isNotEmpty ? post.authorName[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
         ),
         const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              post.authorName,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      post.authorName,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Role badge for peninjau
+                  RoleBadge(
+                    userRole: post.penulis?.peran,
+                    fontSize: 9,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              timeago.format(post.dibuatPada, locale: 'id'),
-              style: const TextStyle(
-                color: Colors.black54,
-                fontSize: 13,
+              const SizedBox(height: 2),
+              Text(
+                post.timeAgo,
+                style: const TextStyle(
+                  color: Colors.black54,
+                  fontSize: 13,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
