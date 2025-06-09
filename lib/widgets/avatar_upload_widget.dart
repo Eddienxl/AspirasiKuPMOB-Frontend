@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
@@ -41,19 +42,52 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
         CircleAvatar(
           radius: widget.radius,
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-          backgroundImage: _currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty
-              ? CachedNetworkImageProvider(_currentAvatarUrl!)
-              : null,
-          child: _currentAvatarUrl == null || _currentAvatarUrl!.isEmpty
-              ? Text(
+          child: _currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty
+              ? ClipOval(
+                  child: _currentAvatarUrl!.startsWith('data:image/')
+                      ? Image.memory(
+                          base64Decode(_currentAvatarUrl!.split(',')[1]),
+                          width: widget.radius * 2,
+                          height: widget.radius * 2,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Text(
+                              widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                fontSize: widget.radius * 0.6,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            );
+                          },
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: _currentAvatarUrl!,
+                          width: widget.radius * 2,
+                          height: widget.radius * 2,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                          ),
+                          errorWidget: (context, url, error) => Text(
+                            widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+                            style: TextStyle(
+                              fontSize: widget.radius * 0.6,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                )
+              : Text(
                   widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
                   style: TextStyle(
                     fontSize: widget.radius * 0.6,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
-                )
-              : null,
+                ),
         ),
 
         // Upload button overlay
@@ -203,7 +237,10 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
       // Notify parent
       widget.onAvatarChanged(avatarUrl);
 
+      // Force widget rebuild to show new image
       if (mounted) {
+        setState(() {});
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Foto profil berhasil diperbarui'),

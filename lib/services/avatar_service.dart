@@ -41,16 +41,21 @@ class AvatarService {
     try {
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
-      
+
       // Get file extension
       final extension = imageFile.name.split('.').last.toLowerCase();
-      final mimeType = 'image/$extension';
-      
-      // Create data URL format
-      final dataUrl = 'data:$mimeType;base64,$base64Image';
 
+      // Ensure only JPEG format (backend validation)
+      if (extension != 'jpg' && extension != 'jpeg') {
+        throw Exception('Hanya format JPG/JPEG yang diperbolehkan');
+      }
+
+      // Create data URL format with JPEG mime type
+      final dataUrl = 'data:image/jpeg;base64,$base64Image';
+
+      // Use auth endpoint for consistency
       final response = await _apiService.put(
-        '${AppConstants.userEndpoint}/profile-picture',
+        '${AppConstants.authEndpoint}/upload-profile-picture',
         {
           'profile_picture': dataUrl,
         },
@@ -72,7 +77,7 @@ class AvatarService {
   Future<bool> removeAvatar() async {
     try {
       await _apiService.put(
-        '${AppConstants.userEndpoint}/profile-picture',
+        '${AppConstants.authEndpoint}/upload-profile-picture',
         {
           'profile_picture': null,
         },

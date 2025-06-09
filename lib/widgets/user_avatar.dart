@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../utils/app_colors.dart';
@@ -29,19 +30,52 @@ class UserAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundColor: effectiveBackgroundColor,
-      backgroundImage: profilePictureUrl != null && profilePictureUrl!.isNotEmpty
-          ? CachedNetworkImageProvider(profilePictureUrl!)
-          : null,
-      child: profilePictureUrl == null || profilePictureUrl!.isEmpty
-          ? Text(
+      child: profilePictureUrl != null && profilePictureUrl!.isNotEmpty
+          ? ClipOval(
+              child: profilePictureUrl!.startsWith('data:image/')
+                  ? Image.memory(
+                      base64Decode(profilePictureUrl!.split(',')[1]),
+                      width: radius * 2,
+                      height: radius * 2,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Text(
+                          userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                          style: TextStyle(
+                            fontSize: effectiveFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: effectiveTextColor,
+                          ),
+                        );
+                      },
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: profilePictureUrl!,
+                      width: radius * 2,
+                      height: radius * 2,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => CircularProgressIndicator(
+                        strokeWidth: 1,
+                        valueColor: AlwaysStoppedAnimation<Color>(effectiveTextColor),
+                      ),
+                      errorWidget: (context, url, error) => Text(
+                        userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          fontSize: effectiveFontSize,
+                          fontWeight: FontWeight.bold,
+                          color: effectiveTextColor,
+                        ),
+                      ),
+                    ),
+            )
+          : Text(
               userName.isNotEmpty ? userName[0].toUpperCase() : '?',
               style: TextStyle(
                 fontSize: effectiveFontSize,
                 fontWeight: FontWeight.bold,
                 color: effectiveTextColor,
               ),
-            )
-          : null,
+            ),
     );
   }
 }
