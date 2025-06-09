@@ -6,6 +6,7 @@ import '../utils/app_colors.dart';
 import '../widgets/campus_background.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/post_card.dart';
+import '../widgets/report_dialog.dart';
 
 import 'post_detail_screen.dart';
 import 'login_screen.dart';
@@ -92,13 +93,40 @@ class _HomeLandingScreenState extends State<HomeLandingScreen> {
       return;
     }
 
-    // Navigate to post detail for reporting
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PostDetailScreen(postId: postId),
-      ),
+    // Show report dialog
+    final String? reportReason = await showDialog<String>(
+      context: context,
+      builder: (context) => const ReportDialog(),
     );
+
+    if (reportReason != null && mounted) {
+      // Submit report
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+
+      try {
+        await postProvider.reportPost(postId, reportReason);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Laporan berhasil dikirim'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal mengirim laporan: $e'),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 
   // Show login required dialog

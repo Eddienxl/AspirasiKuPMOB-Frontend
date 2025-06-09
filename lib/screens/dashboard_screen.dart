@@ -10,6 +10,7 @@ import '../widgets/app_sidebar.dart';
 import '../widgets/post_card.dart';
 import '../widgets/category_filter.dart';
 import '../widgets/sort_dropdown.dart';
+import '../widgets/report_dialog.dart';
 import 'home_landing_screen.dart';
 import 'add_post_screen.dart';
 import 'profile_screen.dart';
@@ -608,18 +609,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     // Show report dialog
-    showDialog(
+    final String? reportReason = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Laporkan Postingan'),
-        content: const Text('Fitur laporan akan segera tersedia.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+      builder: (context) => const ReportDialog(),
     );
+
+    if (reportReason != null && mounted) {
+      // Submit report
+      final postProvider = Provider.of<PostProvider>(context, listen: false);
+
+      try {
+        await postProvider.reportPost(postId, reportReason);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Laporan berhasil dikirim'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal mengirim laporan: $e'),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 }
