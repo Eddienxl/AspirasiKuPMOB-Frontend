@@ -27,12 +27,30 @@ class AdminService {
           .map((json) => Report.fromJson(json))
           .toList();
     } catch (e) {
-      if (e.toString().contains('Session expired') || e.toString().contains('Token')) {
+      String errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      // Log error for debugging
+      print('🔴 Admin Service Error (Reports): $errorMessage');
+
+      // For CORS or network errors, return empty list
+      if (errorMessage.contains('Failed to fetch') ||
+          errorMessage.contains('CORS') ||
+          errorMessage.contains('XMLHttpRequest')) {
+        print('🌐 Network/CORS issue detected, returning empty reports');
+        return [];
+      }
+
+      // For authentication errors, rethrow
+      if (errorMessage.contains('Session expired') ||
+          errorMessage.contains('Token') ||
+          errorMessage.contains('401') ||
+          errorMessage.contains('Unauthorized')) {
         throw Exception('Sesi Anda telah berakhir, silakan login kembali');
-      } else if (e.toString().contains('Connection')) {
+      } else if (errorMessage.contains('Connection')) {
         throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
       } else {
-        throw Exception('Gagal memuat laporan: ${e.toString().replaceAll('Exception: ', '')}');
+        // For other errors, return empty list to prevent UI crashes
+        return [];
       }
     }
   }

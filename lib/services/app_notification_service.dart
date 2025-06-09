@@ -54,6 +54,9 @@ class AppNotificationService {
       // Handle all errors gracefully by returning empty list
       String errorMessage = e.toString().replaceAll('Exception: ', '');
 
+      // Log error for debugging
+      print('🔴 Notification Service Error: $errorMessage');
+
       // For critical authentication errors, still throw to trigger re-login
       if (errorMessage.contains('Session expired') ||
           errorMessage.contains('Token') ||
@@ -62,7 +65,15 @@ class AppNotificationService {
         throw Exception('Sesi Anda telah berakhir, silakan login kembali');
       }
 
-      // For all other errors (network, server, association, etc.), return empty list
+      // For CORS or network errors, return empty list with debug info
+      if (errorMessage.contains('Failed to fetch') ||
+          errorMessage.contains('CORS') ||
+          errorMessage.contains('XMLHttpRequest')) {
+        print('🌐 Network/CORS issue detected, returning empty notifications');
+        return [];
+      }
+
+      // For all other errors (server, association, etc.), return empty list
       // This prevents the notification page from showing error messages for non-critical issues
       return [];
     }
