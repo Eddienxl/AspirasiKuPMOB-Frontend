@@ -1,5 +1,6 @@
 import '../models/app_notification.dart';
 import '../utils/constants.dart';
+import '../utils/logger.dart';
 import 'api_service.dart';
 
 class AppNotificationService {
@@ -55,7 +56,7 @@ class AppNotificationService {
       String errorMessage = e.toString().replaceAll('Exception: ', '');
 
       // Log error for debugging
-      print('🔴 Notification Service Error: $errorMessage');
+      AppLogger.error('Notification Service Error: $errorMessage', tag: 'NotificationService');
 
       // For critical authentication errors, still throw to trigger re-login
       if (errorMessage.contains('Session expired') ||
@@ -69,7 +70,7 @@ class AppNotificationService {
       if (errorMessage.contains('Failed to fetch') ||
           errorMessage.contains('CORS') ||
           errorMessage.contains('XMLHttpRequest')) {
-        print('🌐 Network/CORS issue detected, returning empty notifications');
+        AppLogger.network('Network/CORS issue detected, returning empty notifications', tag: 'NotificationService');
         return [];
       }
 

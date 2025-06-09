@@ -1,6 +1,7 @@
 import '../models/report_model.dart';
 import '../models/post_model.dart';
 import '../utils/constants.dart';
+import '../utils/logger.dart';
 import 'api_service.dart';
 
 class AdminService {
@@ -30,13 +31,13 @@ class AdminService {
       String errorMessage = e.toString().replaceAll('Exception: ', '');
 
       // Log error for debugging
-      print('🔴 Admin Service Error (Reports): $errorMessage');
+      AppLogger.error('Admin Service Error (Reports): $errorMessage', tag: 'AdminService');
 
       // For CORS or network errors, return empty list
       if (errorMessage.contains('Failed to fetch') ||
           errorMessage.contains('CORS') ||
           errorMessage.contains('XMLHttpRequest')) {
-        print('🌐 Network/CORS issue detected, returning empty reports');
+        AppLogger.network('Network/CORS issue detected, returning empty reports', tag: 'AdminService');
         return [];
       }
 
